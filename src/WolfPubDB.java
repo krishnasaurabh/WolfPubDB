@@ -19,14 +19,15 @@ public class WolfPubDB {
     private static PreparedStatement updatePublicationPriceQuery;
     
     private static PreparedStatement createDistributorQuery;
-    private static PreparedStatement updateDistributorAccountNumber;
+    private static PreparedStatement updateDistributorAccountNumberQuery;
     private static PreparedStatement updateDistributorPhoneQuery;
     private static PreparedStatement updateDistributorCityQuery;
-    private static PreparedStatement updateDistributorStreetAddress;
-    private static PreparedStatement updateDistributorType;
-    private static PreparedStatement updateDistributorName;
-    private static PreparedStatement updateDistributorBalance;
-    private static PreparedStatement updateDistributorContactPerson;
+    private static PreparedStatement updateDistributorStreetAddressQuery;
+    private static PreparedStatement updateDistributorTypeQuery;
+    private static PreparedStatement updateDistributorNameQuery;
+    private static PreparedStatement updateDistributorBalanceQuery;
+    private static PreparedStatement updateDistributorContactPersonQuery;
+    private static PreparedStatement deleteDistributorContactPersonQuery;
 
 
     public static void generateDDLAndDMLStatements(Connection connection) {
