@@ -35,8 +35,11 @@ public class WolfPubDB {
     private static PreparedStatement updateOrderTotalCostQuery;
     private static PreparedStatement updateOrderShippingCostQuery;
 
-
-
+    private static PreparedStatement createPaymentQuery;
+    private static PreparedStatement updateSalaryDateQuery;
+    private static PreparedStatement updatePaymentAmountQuery;
+    private static PreparedStatement updatePaymentCollectionDateQuery;
+    
 
 
 
@@ -87,6 +90,15 @@ public class WolfPubDB {
                 updateOrderTotalCostQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `shipping_cost` = ? WHERE order_number = ?;";
                 updateOrderShippingCostQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
+                createPaymentQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `salary_date` = ? WHERE order_number= ?;";
+                updateSalaryDateQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE order_number = ?;";
+                updatePaymentAmountQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE order_number = ?;";
+                updatePaymentCollectionDateQuery = connection.prepareStatement(query);
                
 
 
