@@ -27,7 +27,17 @@ public class WolfPubDB {
     private static PreparedStatement updateDistributorNameQuery;
     private static PreparedStatement updateDistributorBalanceQuery;
     private static PreparedStatement updateDistributorContactPersonQuery;
-    private static PreparedStatement deleteDistributorContactPersonQuery;
+
+    private static PreparedStatement createOrderQuery;
+    private static PreparedStatement updateOrderDateQuery;
+    private static PreparedStatement updateOrderDeliveryDateQuery;
+    private static PreparedStatement updateOrderNumberOfCopiesQuery;
+    private static PreparedStatement updateOrderTotalCostQuery;
+    private static PreparedStatement updateOrderShippingCostQuery;
+
+
+
+
 
 
     public static void generateDDLAndDMLStatements(Connection connection) {
@@ -45,6 +55,41 @@ public class WolfPubDB {
                 updatePublicationTypeQuery= connection.prepareStatement(query);
                 query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
                 editorAssignmentQuery= connection.prepareStatement(query);
+                
+                query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                createDistributorQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
+                updateDistributorAccountNumberQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `phone` = ? WHERE account_number = ?;";
+                updateDistributorPhoneQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `city` = ? WHERE account_number = ?;";
+                updateDistributorCityQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `street_address` = ? WHERE account_number = ?;";
+                updateDistributorStreetAddressQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `type` = ? WHERE account_number = ?;";
+                updateDistributorTypeQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `name` = ? WHERE account_number = ?;";
+                updateDistributorNameQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `balance` = ? WHERE account_number = ?;";
+                updateDistributorBalanceQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `contact_person` = ? WHERE account_number = ?;";
+                updateDistributorContactPersonQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                createOrderQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
+                updateOrderDateQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `order_delivery_date` = ? WHERE order_number = ?;";
+                updateOrderDeliveryDateQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `number_of_copies` = ? WHERE order_number = ?;";
+                updateOrderNumberOfCopiesQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `total_cost` = ? WHERE order_number = ?;";
+                updateOrderTotalCostQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `shipping_cost` = ? WHERE order_number = ?;";
+                updateOrderShippingCostQuery = connection.prepareStatement(query);
+               
+
+
         }
         catch (SQLException e){
                 e.printStackTrace();
