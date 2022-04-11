@@ -3,6 +3,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class WolfPubDB {
     static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/kvankad";
