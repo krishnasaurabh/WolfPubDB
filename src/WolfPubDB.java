@@ -44,7 +44,6 @@ public class WolfPubDB {
     private static PreparedStatement insertArticleQuery;
     private static PreparedStatement updateArticleTitleQuery;
     private static PreparedStatement updateArticleTextQuery;
-    private static PreparedStatement updateArticleTopicQuery;
     private static PreparedStatement deleteArticleQuery;
 
     private static PreparedStatement createDistributorQuery;
@@ -70,8 +69,6 @@ public class WolfPubDB {
     private static PreparedStatement updatePaymentCollectionDateQuery;
 
 
-
-
     public static void generateDDLAndDMLStatements(Connection connection) {
         String query;
         try{
@@ -86,7 +83,7 @@ public class WolfPubDB {
                 query = "UPDATE `Publications`" + " SET `type` = ? WHERE `publication_ID`= ?;";
                 updatePublicationTypeQuery = connection.prepareStatement(query);
                 query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
-                deleteBookEditionQuery = connection.prepareStatement(query);
+                deletePublicationQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
                 editorAssignmentQuery = connection.prepareStatement(query);
@@ -129,14 +126,12 @@ public class WolfPubDB {
                 query = "DELETE FROM `DistributorPayments`" + " WHERE `account_number`= ? AND `payment_date`=?;";
                 deleteDistributorPaymentQuery = connection.prepareStatement(query);
 
-                query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`, `topic`) VALUES (?, ?, ?, ?, ?);";
+                query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`) VALUES (?, ?, ?, ?);";
                 insertArticleQuery = connection.prepareStatement(query);
                 query = "UPDATE `Articles` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
                 updateArticleTitleQuery = connection.prepareStatement(query);
                 query = "UPDATE `Articles` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
                 updateArticleTextQuery = connection.prepareStatement(query);
-                query = "UPDATE `Articles` SET `topic` = ? WHERE `publication_ID`= ? AND `title`=?;";
-                updateArticleTopicQuery = connection.prepareStatement(query);
                 query = "DELETE FROM `Articles`" + " WHERE `publication_ID` = ? and `title`= ?;";
                 deleteArticleQuery = connection.prepareStatement(query);
                 editorAssignmentQuery= connection.prepareStatement(query);
@@ -189,6 +184,231 @@ public class WolfPubDB {
                 e.printStackTrace();
         }
     }
+
+    public static void insertPublication(int publicationID, String title, String topic, String type, Double price )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPublicationQuery.setInt(1,publicationID);
+                        insertPublicationQuery.setString(2,title);
+                        insertPublicationQuery.setString(3,topic);
+                        insertPublicationQuery.setString(4,type);
+                        insertPublicationQuery.setDouble(5,price);
+                        insertPublicationQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertBook(int publicationID, int isbn, int edition, String publicationDate )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertBookQuery.setInt(1,publicationID);
+                        insertBookQuery.setInt(2,isbn);
+                        insertBookQuery.setInt(3,edition);
+                        insertBookQuery.setString(4,publicationDate);
+                        insertBookQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteBook(int publicationID)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteBookQuery.setInt(1,publicationID);
+                        deleteBookQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertPeriodical(int publicationID, String issueDate, String periodicity )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPeriodicalQuery.setInt(1,publicationID);
+                        insertPeriodicalQuery.setString(2,issueDate);
+                        insertPeriodicalQuery.setString(3,periodicity);
+                        insertPeriodicalQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteChapter(int publicationID, String title )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteChaptersQuery.setInt(1,publicationID);
+                        deleteChaptersQuery.setString(2,title);
+                        deleteChaptersQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertChapter(int publicationID, String title, String text )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertChapterQuery.setInt(1,publicationID);
+                        insertChapterQuery.setString(2,title);
+                        insertChapterQuery.setString(3,text);
+                        insertChapterQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertArticle(int publicationID, String title, String text, String creationDate )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertArticleQuery.setInt(1,publicationID);
+                        insertArticleQuery.setString(2,title);
+                        insertArticleQuery.setString(3,text);
+                        insertArticleQuery.setString(4,creationDate);
+                        insertArticleQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteArticle(int publicationID, String title)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteArticleQuery.setInt(1,publicationID);
+                        deleteArticleQuery.setString(2,title);
+                        deleteArticleQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void editorAssignment(int staffID, int publicationID )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        editorAssignmentQuery.setInt(1,staffID);
+                        editorAssignmentQuery.setInt(2,publicationID);
+                        editorAssignmentQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
 
 
     public static void main(String[] args) {
