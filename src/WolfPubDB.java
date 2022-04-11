@@ -11,6 +11,36 @@ public class WolfPubDB {
     private static Statement statement = null;
     private static ResultSet result = null;
 
+    private static PreparedStatement editorAssignmentQuery;
+    private static PreparedStatement insertPublicationQuery;
+    private static PreparedStatement updatePublicationTitleQuery;
+    private static PreparedStatement updatePublicationTopicQuery;
+    private static PreparedStatement updatePublicationTypeQuery;
+    private static PreparedStatement updatePublicationPriceQuery;
+
+
+    public static void generateDDLAndDMLStatements(Connection connection) {
+        String query;
+        try{
+                query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
+                insertPublicationQuery= connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `price` = ? WHERE PID= ?;";
+                updatePublicationPriceQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `TOPIC` = ? WHERE PID= ?;";
+                updatePublicationTopicQuery= connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `title` = ? WHERE PID= ?;";
+                updatePublicationTitleQuery= connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `type` = ? WHERE PID= ?;";
+                updatePublicationTypeQuery= connection.prepareStatement(query);
+                query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
+                editorAssignmentQuery= connection.prepareStatement(query);
+        }
+        catch (SQLException e){
+                e.printStackTrace();
+        }
+    }
+
+
     public static void main(String[] args) {
 
         System.out.println("***************************************************************");
@@ -403,7 +433,7 @@ public class WolfPubDB {
                     "INSERT INTO `WritesBook;` (`staff_ID`, `publication_ID`) VALUES (6994, 1003);");
             statement.executeUpdate(
                     "INSERT INTO `WritesBook;` (`staff_ID`, `publication_ID`) VALUES (6996, 1004);");
-                    
+
         } catch (SQLException e) {
             connection.rollback();
             e.printStackTrace();
