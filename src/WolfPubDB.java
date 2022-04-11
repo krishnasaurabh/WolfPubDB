@@ -12,28 +12,111 @@ public class WolfPubDB {
     private static ResultSet result = null;
 
     private static PreparedStatement editorAssignmentQuery;
+    private static PreparedStatement editorUnAssignmentQuery;
+
     private static PreparedStatement insertPublicationQuery;
     private static PreparedStatement updatePublicationTitleQuery;
     private static PreparedStatement updatePublicationTopicQuery;
     private static PreparedStatement updatePublicationTypeQuery;
     private static PreparedStatement updatePublicationPriceQuery;
+    private static PreparedStatement deletePublicationQuery;
+
+    private static PreparedStatement insertBookQuery;
+    private static PreparedStatement updateBookISBNQuery;
+    private static PreparedStatement updateBookEditionQuery;
+    private static PreparedStatement updateBookPublicationDateQuery;
+    private static PreparedStatement deleteBookQuery;
+
+    private static PreparedStatement insertChapterQuery;
+    private static PreparedStatement updateChapterTitleQuery;
+    private static PreparedStatement updateChapterTextQuery;
+    private static PreparedStatement deleteChaptersQuery;
+
+    private static PreparedStatement insertPeriodicalQuery;
+    private static PreparedStatement updatePeriodicalIssueDateQuery;
+    private static PreparedStatement updatePeriodicalPeriodicityQuery;
+    private static PreparedStatement deletePeriodicalQuery;
+
+    private static PreparedStatement insertDistributorPaymentQuery;
+    private static PreparedStatement updateDistributorPaymentAmountPaidQuery;
+    private static PreparedStatement deleteDistributorPaymentQuery;
+
+    private static PreparedStatement insertArticleQuery;
+    private static PreparedStatement updateArticleTitleQuery;
+    private static PreparedStatement updateArticleTextQuery;
+    private static PreparedStatement updateArticleTopicQuery;
+    private static PreparedStatement deleteArticleQuery;
+
 
 
     public static void generateDDLAndDMLStatements(Connection connection) {
         String query;
         try{
                 query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
-                insertPublicationQuery= connection.prepareStatement(query);
-                query = "UPDATE `Publications`" + " SET `price` = ? WHERE PID= ?;";
+                insertPublicationQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `price` = ? WHERE `publication_ID`= ?;";
                 updatePublicationPriceQuery = connection.prepareStatement(query);
-                query = "UPDATE `Publications`" + " SET `TOPIC` = ? WHERE PID= ?;";
-                updatePublicationTopicQuery= connection.prepareStatement(query);
-                query = "UPDATE `Publications`" + " SET `title` = ? WHERE PID= ?;";
-                updatePublicationTitleQuery= connection.prepareStatement(query);
-                query = "UPDATE `Publications`" + " SET `type` = ? WHERE PID= ?;";
-                updatePublicationTypeQuery= connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `TOPIC` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTopicQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `title` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `type` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTypeQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
+                deleteBookEditionQuery = connection.prepareStatement(query);
+
                 query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
-                editorAssignmentQuery= connection.prepareStatement(query);
+                editorAssignmentQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Edits`" + " WHERE `staff_ID` = ? AND `publication_ID`=?;";
+                editorUnAssignmentQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Books` (`publication_ID`, `ISBN`,`Edition`,`publication_date`) VALUES (?,?,?,?);";
+                insertBookQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `ISBN` = ? WHERE `publication_ID`= ?;";
+                updateBookEditionISBNQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `Edition` = ? WHERE `publication_ID`= ?;";
+                updateBookEditionQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `publication_date` = ? WHERE `publication_ID`= ?;";
+                updateBookPublicationDateQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_date` = ?;";
+                deleteBookQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Chapters` (`publication_ID`, `title`, `text`) VALUES (?, ?, ?);";
+                insertChapterQuery = connection.prepareStatement(query);
+                query = "UPDATE `Chapters` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateChapterTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Chapters` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateChapterTextQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Chapters`" + " WHERE `publication_ID` = ? and `title`= ?;";
+                deleteChaptersQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Periodicals` (`publication_ID`, `issue_date`,`periodicity`) VALUES (?,?,?);";
+                insertPeriodicalQuery = connection.prepareStatement(query);
+                query = "UPDATE `Periodicals`" + " SET `issue_date` = ? WHERE `publication_ID`= ?;";
+                updatePeriodicalIssueDateQuery = connection.prepareStatement(query);
+                query = "UPDATE `Periodicals`" + " SET `periodicity` = ? WHERE `publication_ID`= ?;";
+                updatePeriodicalPeriodicityQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
+                deletePeriodicalQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `DistributorPayments` (`account_number`, `payment_date`, `amount_paid`) VALUES (?, ?, ?);";
+                insertDistributorPaymentQuery = connection.prepareStatement(query);
+                query = "UPDATE `DistributorPayments`" + " SET `amount_paid` = ? WHERE `account_number`= ? AND `payment_date`=?;";
+                updateDistributorPaymentAmountPaidQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `DistributorPayments`" + " WHERE `account_number`= ? AND `payment_date`=?;";
+                deleteDistributorPaymentQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`, `topic`) VALUES (?, ?, ?, ?, ?);";
+                insertArticleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleTextQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `topic` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleTopicQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Articles`" + " WHERE `publication_ID` = ? and `title`= ?;";
+                deleteArticleQuery = connection.prepareStatement(query);
+
         }
         catch (SQLException e){
                 e.printStackTrace();
