@@ -44,6 +44,7 @@ public class WolfPubDB {
 
     private static PreparedStatement insertArticleQuery;
     private static PreparedStatement updateArticleTitleQuery;
+    private static PreparedStatement updateArticleCreationDateQuery;
     private static PreparedStatement updateArticleTextQuery;
     private static PreparedStatement deleteArticleQuery;
 
@@ -94,7 +95,7 @@ public class WolfPubDB {
                 query = "INSERT INTO `Books` (`publication_ID`, `ISBN`,`Edition`,`publication_date`) VALUES (?,?,?,?);";
                 insertBookQuery = connection.prepareStatement(query);
                 query = "UPDATE `Books`" + " SET `ISBN` = ? WHERE `publication_ID`= ?;";
-                updateBookEditionISBNQuery = connection.prepareStatement(query);
+                updateBookISBNQuery = connection.prepareStatement(query);
                 query = "UPDATE `Books`" + " SET `Edition` = ? WHERE `publication_ID`= ?;";
                 updateBookEditionQuery = connection.prepareStatement(query);
                 query = "UPDATE `Books`" + " SET `publication_date` = ? WHERE `publication_ID`= ?;";
@@ -133,12 +134,13 @@ public class WolfPubDB {
                 updateArticleTitleQuery = connection.prepareStatement(query);
                 query = "UPDATE `Articles` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
                 updateArticleTextQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `creation_date` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleCreationDateQuery = connection.prepareStatement(query);
                 query = "DELETE FROM `Articles`" + " WHERE `publication_ID` = ? and `title`= ?;";
                 deleteArticleQuery = connection.prepareStatement(query);
-                editorAssignmentQuery= connection.prepareStatement(query);
 
                 query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-                createDistributorQuery = connection.prepareStatement(query);
+                insertDistributorQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
                 updateDistributorAccountNumberQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Distributors`" + " SET `phone` = ? WHERE account_number = ?;";
@@ -157,7 +159,7 @@ public class WolfPubDB {
                 updateDistributorContactPersonQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-                createOrderQuery = connection.prepareStatement(query);
+                insertOrderQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
                 updateOrderDateQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `order_delivery_date` = ? WHERE order_number = ?;";
@@ -170,7 +172,7 @@ public class WolfPubDB {
                 updateOrderShippingCostQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
-                createPaymentQuery = connection.prepareStatement(query);
+                insertPaymentQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Payment`" + " SET `salary_date` = ? WHERE order_number= ?;";
                 updateSalaryDateQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE order_number = ?;";
@@ -197,6 +199,59 @@ public class WolfPubDB {
                         insertPublicationQuery.setString(4,type);
                         insertPublicationQuery.setDouble(5,price);
                         insertPublicationQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+     public static void updatePublication(int publicationID, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updatePublicationTitleQuery.setString(1,newValue);
+                                        updatePublicationTitleQuery.setInt(2,publicationID);
+                                        updatePublicationTitleQuery.executeUpdate();
+
+                                        break;
+
+                                case "2":
+                                        updatePublicationTopicQuery.setString(1,newValue);
+                                        updatePublicationTopicQuery.setInt(2,publicationID);
+                                        updatePublicationTopicQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updatePublicationTypeQuery.setString(1,newValue);
+                                        updatePublicationTypeQuery.setInt(2,publicationID);
+                                        updatePublicationTypeQuery.executeUpdate();
+                                        break;
+
+                                case "4":
+                                        updatePublicationPriceQuery.setString(1,newValue);
+                                        updatePublicationPriceQuery.setInt(2,publicationID);
+                                        updatePublicationPriceQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
                         connection.commit();
                 }
                 catch(SQLException e){
@@ -262,6 +317,52 @@ public class WolfPubDB {
 
     }
 
+    public static void updateBook(int publicationID, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateBookISBNQuery.setString(1,newValue);
+                                        updatePublicationTitleQuery.setInt(2,publicationID);
+                                        updatePublicationTitleQuery.executeUpdate();
+
+                                        break;
+
+                                case "2":
+                                        updateBookEditionQuery.setString(1,newValue);
+                                        updateBookEditionQuery.setInt(2,publicationID);
+                                        updateBookEditionQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateBookPublicationDateQuery.setString(1,newValue);
+                                        updateBookPublicationDateQuery.setInt(2,publicationID);
+                                        updateBookPublicationDateQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+    }
+
     public static void insertPeriodical(int publicationID, String issueDate, String periodicity )
     {
         try{
@@ -271,6 +372,100 @@ public class WolfPubDB {
                         insertPeriodicalQuery.setString(2,issueDate);
                         insertPeriodicalQuery.setString(3,periodicity);
                         insertPeriodicalQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void updatePeriodical(int publicationID, String option, String newValue )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updatePeriodicalIssueDateQuery.setString(1,newValue);
+                                        updatePeriodicalIssueDateQuery.setInt(2,publicationID);
+                                        updatePeriodicalIssueDateQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updatePeriodicalPeriodicityQuery.setString(1,newValue);
+                                        updatePeriodicalPeriodicityQuery.setInt(2,publicationID);
+                                        updatePeriodicalPeriodicityQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+      public static void deletePeriodical(int publicationID )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPeriodicalQuery.setInt(1,publicationID);
+                        insertPeriodicalQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertDistributor(int accountNumber, String phone, String city, String streetAddress,
+    String type, String name, Double balance, String contactPerson )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertDistributorQuery.setInt(1,accountNumber);
+                        insertDistributorQuery.setString(2,phone);
+                        insertDistributorQuery.setString(3,city);
+                        insertDistributorQuery.setString(4,streetAddress);
+                        insertDistributorQuery.setString(5,type);
+                        insertDistributorQuery.setString(6,name);
+                        insertDistributorQuery.setDouble(7,balance);
+                        insertDistributorQuery.setString(8,contactPerson);
+                        insertDistributorQuery.executeUpdate();
                         connection.commit();
                 }
                 catch(SQLException e){
@@ -336,6 +531,48 @@ public class WolfPubDB {
 
     }
 
+      public static void updateChapter(int publicationID, String title, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateChapterTitleQuery.setString(1,newValue);
+                                        updateChapterTitleQuery.setInt(2,publicationID);
+                                        updateChapterTitleQuery.setString(3,title);
+                                        updateChapterTitleQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateChapterTextQuery.setString(1,newValue);
+                                        updateChapterTextQuery.setInt(2,publicationID);
+                                        updateChapterTextQuery.setString(3,title);
+                                        updateChapterTextQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
     public static void insertArticle(int publicationID, String title, String text, String creationDate )
     {
         try{
@@ -384,6 +621,55 @@ public class WolfPubDB {
                 e.printStackTrace();
         }
 
+    }
+
+    public static void updateArticle(int publicationID, String title, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+
+                                case "1":
+                                        updateArticleTitleQuery .setString(1,newValue);
+                                        updateArticleTitleQuery.setInt(2,publicationID);
+                                        updateArticleTitleQuery.setString(3,title);
+                                        updateArticleTitleQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateArticleTextQuery.setString(1,newValue);
+                                        updateArticleTextQuery.setInt(2,publicationID);
+                                        updateArticleTextQuery.setString(3,title);
+                                        updateArticleTextQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateArticleCreationDateQuery.setString(1,newValue);
+                                        updateArticleCreationDateQuery.setInt(2,publicationID);
+                                        updateArticleCreationDateQuery.setString(3,title);
+                                        updateBookEditionQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
     }
 
     public static void editorAssignment(int staffID, int publicationID )
@@ -484,7 +770,7 @@ public class WolfPubDB {
                     + "`street_address` VARCHAR(255) NOT NULL,"
                     + "`type` VARCHAR(255) NOT NULL,"
                     + "`name` VARCHAR(255) NOT NULL,"
-                    + "`balance` INT NOT NULL,"
+                    + "`balance` DECIMAL(8,2) NOT NULL,"
                     + "`contact_person` VARCHAR(255) NOT NULL,"
                     + "PRIMARY KEY(`account_number`)"
                     + ");";
