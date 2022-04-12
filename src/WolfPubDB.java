@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,12 +22,14 @@ public class WolfPubDB {
     private static PreparedStatement updatePublicationTypeQuery;
     private static PreparedStatement updatePublicationPriceQuery;
     private static PreparedStatement deletePublicationQuery;
+    private static PreparedStatement updateBookEditionISBNQuery;
 
     private static PreparedStatement insertBookQuery;
     private static PreparedStatement updateBookISBNQuery;
     private static PreparedStatement updateBookEditionQuery;
     private static PreparedStatement updateBookPublicationDateQuery;
     private static PreparedStatement deleteBookQuery;
+    private static PreparedStatement deleteBookEditionQuery;
 
     private static PreparedStatement insertChapterQuery;
     private static PreparedStatement updateChapterTitleQuery;
@@ -48,7 +51,7 @@ public class WolfPubDB {
     private static PreparedStatement updateArticleTopicQuery;
     private static PreparedStatement deleteArticleQuery;
 
-    private static PreparedStatement createDistributorQuery;
+    private static PreparedStatement insertDistributorQuery;
     private static PreparedStatement updateDistributorAccountNumberQuery;
     private static PreparedStatement updateDistributorPhoneQuery;
     private static PreparedStatement updateDistributorCityQuery;
@@ -58,15 +61,14 @@ public class WolfPubDB {
     private static PreparedStatement updateDistributorBalanceQuery;
     private static PreparedStatement updateDistributorContactPersonQuery;
 
-    private static PreparedStatement createOrderQuery;
+    private static PreparedStatement insertOrderQuery;
     private static PreparedStatement updateOrderDateQuery;
     private static PreparedStatement updateOrderDeliveryDateQuery;
     private static PreparedStatement updateOrderNumberOfCopiesQuery;
     private static PreparedStatement updateOrderTotalCostQuery;
     private static PreparedStatement updateOrderShippingCostQuery;
 
-    private static PreparedStatement createPaymentQuery;
-    private static PreparedStatement updateSalaryDateQuery;
+    private static PreparedStatement insertPaymentQuery;
     private static PreparedStatement updatePaymentAmountQuery;
     private static PreparedStatement updatePaymentCollectionDateQuery;
 
@@ -143,7 +145,7 @@ public class WolfPubDB {
                 editorAssignmentQuery= connection.prepareStatement(query);
 
                 query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-                createDistributorQuery = connection.prepareStatement(query);
+                insertDistributorQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
                 updateDistributorAccountNumberQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Distributors`" + " SET `phone` = ? WHERE account_number = ?;";
@@ -162,7 +164,7 @@ public class WolfPubDB {
                 updateDistributorContactPersonQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
-                createOrderQuery = connection.prepareStatement(query);
+                insertOrderQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
                 updateOrderDateQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `order_delivery_date` = ? WHERE order_number = ?;";
@@ -175,12 +177,10 @@ public class WolfPubDB {
                 updateOrderShippingCostQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
-                createPaymentQuery = connection.prepareStatement(query);
-                query =  "UPDATE `Payment`" + " SET `salary_date` = ? WHERE order_number= ?;";
-                updateSalaryDateQuery = connection.prepareStatement(query);
-                query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE order_number = ?;";
+                insertPaymentQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE staff_ID = ? AND salary_date = ?;";
                 updatePaymentAmountQuery = connection.prepareStatement(query);
-                query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE order_number = ?;";
+                query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                 updatePaymentCollectionDateQuery = connection.prepareStatement(query);
 
 
@@ -192,6 +192,134 @@ public class WolfPubDB {
     }
 
 
+
+    public static void insertOrder(int order_number, int publication_ID, int distributor_account_no, String order_date, String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost){
+        try {
+                connection.setAutoCommit(false);
+              try {
+                      insertOrderQuery.setInt(1,order_number);
+                      insertOrderQuery.setInt(2,publication_ID);
+                      insertOrderQuery.setInt(3, distributor_account_no);
+                      insertOrderQuery.setString(4, order_date);
+                      insertOrderQuery.setString(5, order_delivery_date);
+                      insertOrderQuery.setInt(6, number_of_copies);
+                      insertOrderQuery.setDouble(7, total_cost);
+                      insertOrderQuery.setDouble(8, shipping_cost);
+                      insertOrderQuery.executeUpdate();
+                      connection.commit();
+              } catch (SQLException e) {
+                  connection.rollback();
+                  e.printStackTrace();
+              } finally {
+                  connection.setAutoCommit(true);
+              }
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+
+    }
+
+    public void updateOrder(String newValue, String option, int order_number){
+        try {
+                connection.setAutoCommit(false);
+                try {
+                    switch (option) {
+    
+                        case "1":
+                                updateOrderDateQuery.setString(1, newValue );
+                                updateOrderDateQuery.setInt(2, order_number);
+                                updateOrderDateQuery.executeUpdate();
+                                break;
+                        case "2":
+                                updateOrderDeliveryDateQuery.setString(1, newValue);
+                                updateOrderDeliveryDateQuery.setInt(2, order_number);
+                                updateOrderDeliveryDateQuery.executeUpdate();
+                                break;
+                        case "3":
+                                updateOrderNumberOfCopiesQuery.setInt(1, Integer.parseInt(newValue));
+                                updateOrderNumberOfCopiesQuery.setInt(2, order_number);
+                                updateOrderNumberOfCopiesQuery.executeUpdate();
+                        case "4":
+                                updateOrderTotalCostQuery.setDouble(1, Double.parseDouble(newValue));
+                                updateOrderTotalCostQuery.setInt(2, order_number);
+                                updateOrderTotalCostQuery.executeUpdate();
+                        case "5":
+                                updateOrderShippingCostQuery.setDouble(1, Double.parseDouble(newValue));
+                                updateOrderShippingCostQuery.setInt(2, order_number);
+                                updateOrderShippingCostQuery.executeUpdate();
+                        default:
+                                System.out.println("Cannot perform the update operation");
+                                break;
+                    }
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    e.printStackTrace();
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } 
+
+    }
+    public static void insertPayment(int staff_ID, String salary_date, double payment_amount, String collection_date){
+        try {
+                connection.setAutoCommit(false);
+              try {
+                      insertPaymentQuery.setInt(1,staff_ID);
+                      insertOrderQuery.setString(2,salary_date);
+                      insertOrderQuery.setDouble(3, payment_amount);
+                      insertOrderQuery.setString(4, collection_date);
+                      insertOrderQuery.executeUpdate();
+                      connection.commit();
+              } catch (SQLException e) {
+                  connection.rollback();
+                  e.printStackTrace();
+              } finally {
+                  connection.setAutoCommit(true);
+              }
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+
+    }
+
+    public static void updatePayment(String option, String newValue, int staff_ID, String salary_date){
+        try {
+                connection.setAutoCommit(false);
+                try {
+                    switch (option) {
+    
+                        case "1":
+                                updatePaymentAmountQuery.setDouble(1, Double.parseDouble(newValue));
+                                updatePaymentAmountQuery.setInt(2, staff_ID);
+                                updatePaymentAmountQuery.setString(2, salary_date);
+                                updatePaymentAmountQuery.executeUpdate();
+                                break;
+                        case "2":
+                                updatePaymentCollectionDateQuery.setString(1, newValue);
+                                updatePaymentCollectionDateQuery.setInt(2, staff_ID);
+                                updatePaymentCollectionDateQuery.setString(2, salary_date);
+                                updatePaymentCollectionDateQuery.executeUpdate();
+                                break;
+                        default:
+                                System.out.println("Cannot perform the update operation");
+                                break;
+                    }
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    e.printStackTrace();
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } 
+
+    }
+    
     public static void main(String[] args) {
 
         System.out.println("***************************************************************");
