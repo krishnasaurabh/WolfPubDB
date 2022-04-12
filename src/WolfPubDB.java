@@ -60,6 +60,7 @@ public class WolfPubDB {
     private static PreparedStatement updateDistributorNameQuery;
     private static PreparedStatement updateDistributorBalanceQuery;
     private static PreparedStatement updateDistributorContactPersonQuery;
+    private static PreparedStatement deleteDistributorQuery;
 
     private static PreparedStatement insertOrderQuery;
     private static PreparedStatement updateOrderDateQuery;
@@ -67,10 +68,13 @@ public class WolfPubDB {
     private static PreparedStatement updateOrderNumberOfCopiesQuery;
     private static PreparedStatement updateOrderTotalCostQuery;
     private static PreparedStatement updateOrderShippingCostQuery;
+    private static PreparedStatement deleteOrderQuery;
 
     private static PreparedStatement insertPaymentQuery;
     private static PreparedStatement updatePaymentAmountQuery;
     private static PreparedStatement updatePaymentCollectionDateQuery;
+    private static PreparedStatement deletePaymentQuery;
+
 
 
     public static void generateDDLAndDMLStatements(Connection connection) {
@@ -159,6 +163,7 @@ public class WolfPubDB {
                 updateDistributorBalanceQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Distributors`" + " SET `contact_person` = ? WHERE account_number = ?;";
                 updateDistributorContactPersonQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
 
                 query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                 insertOrderQuery = connection.prepareStatement(query);
@@ -172,6 +177,8 @@ public class WolfPubDB {
                 updateOrderTotalCostQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Orders`" + " SET `shipping_cost` = ? WHERE order_number = ?;";
                 updateOrderShippingCostQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Orders`" + " WHERE `order_number` = ?;";
+                deleteOrderQuery = connection.prepareStatement(query);
 
                 query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
                 insertPaymentQuery = connection.prepareStatement(query);
@@ -180,6 +187,8 @@ public class WolfPubDB {
                 updatePaymentAmountQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                 updatePaymentCollectionDateQuery = connection.prepareStatement(query);
+                query = "";
+                deletePaymentQuery = connection.prepareStatement(query);
 
 
 
@@ -188,7 +197,98 @@ public class WolfPubDB {
                 e.printStackTrace();
         }
     }
+    public static void deleteDistributor(int account_number){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteDistributorQuery.setInt(1,account_number);
+                        deleteDistributorQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
 
+
+    }
+    
+    public static void updateDistributor(int account_number, String newValue, String option){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateDistributorAccountNumberQuery.setInt(1,Integer.parseInt(newValue));
+                                        updateDistributorAccountNumberQuery.setInt(2,account_number);
+                                        updateDistributorAccountNumberQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateDistributorPhoneQuery.setString(1,newValue);
+                                        updateDistributorPhoneQuery.setInt(2,account_number);
+                                        updateDistributorPhoneQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateDistributorCityQuery.setString(1,newValue);
+                                        updateDistributorCityQuery.setInt(2,account_number);
+                                        updateDistributorCityQuery.executeUpdate();
+                                        break;
+
+                                case "5":
+                                        updateDistributorStreetAddressQuery.setString(1,newValue);
+                                        updateDistributorStreetAddressQuery.setInt(2,account_number);
+                                        updateDistributorStreetAddressQuery.executeUpdate();
+                                        break;
+                                case "6":
+                                        updateDistributorTypeQuery.setString(1,newValue);
+                                        updateDistributorTypeQuery.setInt(2,account_number);
+                                        updateDistributorTypeQuery.executeUpdate();
+                                        break;
+                                case "8":
+                                        updateDistributorNameQuery.setString(1,newValue);
+                                        updateDistributorNameQuery.setInt(2,account_number);
+                                        updateDistributorNameQuery.executeUpdate();
+                                        break;
+                                case "9":
+                                        updateDistributorBalanceQuery.setInt(1,Integer.parseInt(newValue));
+                                        updateDistributorBalanceQuery.setInt(2,account_number);
+                                        updateDistributorBalanceQuery.executeUpdate();
+                                        break;
+                                case "10":
+                                        updateDistributorContactPersonQuery.setString(1,newValue);
+                                        updateDistributorContactPersonQuery.setInt(2,account_number);
+                                        updateDistributorContactPersonQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+    }
     public static void insertPublication(int publicationID, String title, String topic, String type, Double price )
     {
         try{
