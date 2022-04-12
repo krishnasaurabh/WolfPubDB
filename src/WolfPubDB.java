@@ -1,8 +1,10 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.PreparedStatement;
 
 public class WolfPubDB {
     static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/kvankad";
@@ -11,6 +13,967 @@ public class WolfPubDB {
     private static Statement statement = null;
     private static ResultSet result = null;
 
+    private static PreparedStatement editorAssignmentQuery;
+    private static PreparedStatement editorUnAssignmentQuery;
+
+    private static PreparedStatement insertPublicationQuery;
+    private static PreparedStatement updatePublicationTitleQuery;
+    private static PreparedStatement updatePublicationTopicQuery;
+    private static PreparedStatement updatePublicationTypeQuery;
+    private static PreparedStatement updatePublicationPriceQuery;
+    private static PreparedStatement deletePublicationQuery;
+    private static PreparedStatement updateBookEditionISBNQuery;
+
+    private static PreparedStatement insertBookQuery;
+    private static PreparedStatement updateBookISBNQuery;
+    private static PreparedStatement updateBookEditionQuery;
+    private static PreparedStatement updateBookPublicationDateQuery;
+    private static PreparedStatement deleteBookQuery;
+    private static PreparedStatement deleteBookEditionQuery;
+
+    private static PreparedStatement insertChapterQuery;
+    private static PreparedStatement updateChapterTitleQuery;
+    private static PreparedStatement updateChapterTextQuery;
+    private static PreparedStatement deleteChaptersQuery;
+
+    private static PreparedStatement insertPeriodicalQuery;
+    private static PreparedStatement updatePeriodicalIssueDateQuery;
+    private static PreparedStatement updatePeriodicalPeriodicityQuery;
+    private static PreparedStatement deletePeriodicalQuery;
+
+    private static PreparedStatement insertDistributorPaymentQuery;
+    private static PreparedStatement updateDistributorPaymentAmountPaidQuery;
+    private static PreparedStatement deleteDistributorPaymentQuery;
+
+    private static PreparedStatement insertArticleQuery;
+    private static PreparedStatement updateArticleTitleQuery;
+    private static PreparedStatement updateArticleCreationDateQuery;
+    private static PreparedStatement updateArticleTextQuery;
+    private static PreparedStatement deleteArticleQuery;
+
+    private static PreparedStatement insertDistributorQuery;
+    private static PreparedStatement updateDistributorAccountNumberQuery;
+    private static PreparedStatement updateDistributorPhoneQuery;
+    private static PreparedStatement updateDistributorCityQuery;
+    private static PreparedStatement updateDistributorStreetAddressQuery;
+    private static PreparedStatement updateDistributorTypeQuery;
+    private static PreparedStatement updateDistributorNameQuery;
+    private static PreparedStatement updateDistributorBalanceQuery;
+    private static PreparedStatement updateDistributorContactPersonQuery;
+    private static PreparedStatement deleteDistributorQuery;
+
+    private static PreparedStatement insertOrderQuery;
+    private static PreparedStatement updateOrderDateQuery;
+    private static PreparedStatement updateOrderDeliveryDateQuery;
+    private static PreparedStatement updateOrderNumberOfCopiesQuery;
+    private static PreparedStatement updateOrderTotalCostQuery;
+    private static PreparedStatement updateOrderShippingCostQuery;
+    private static PreparedStatement deleteOrderQuery;
+
+    private static PreparedStatement insertPaymentQuery;
+    private static PreparedStatement updatePaymentAmountQuery;
+    private static PreparedStatement updatePaymentCollectionDateQuery;
+    private static PreparedStatement deletePaymentQuery;
+
+
+
+    public static void generateDDLAndDMLStatements(Connection connection) {
+        String query;
+        try{
+                query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
+                insertPublicationQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `price` = ? WHERE `publication_ID`= ?;";
+                updatePublicationPriceQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `TOPIC` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTopicQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `title` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Publications`" + " SET `type` = ? WHERE `publication_ID`= ?;";
+                updatePublicationTypeQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
+                deletePublicationQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
+                editorAssignmentQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Edits`" + " WHERE `staff_ID` = ? AND `publication_ID`=?;";
+                editorUnAssignmentQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Books` (`publication_ID`, `ISBN`,`Edition`,`publication_date`) VALUES (?,?,?,?);";
+                insertBookQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `ISBN` = ? WHERE `publication_ID`= ?;";
+                updateBookISBNQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `Edition` = ? WHERE `publication_ID`= ?;";
+                updateBookEditionQuery = connection.prepareStatement(query);
+                query = "UPDATE `Books`" + " SET `publication_date` = ? WHERE `publication_ID`= ?;";
+                updateBookPublicationDateQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_date` = ?;";
+                deleteBookQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Chapters` (`publication_ID`, `title`, `text`) VALUES (?, ?, ?);";
+                insertChapterQuery = connection.prepareStatement(query);
+                query = "UPDATE `Chapters` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateChapterTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Chapters` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateChapterTextQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Chapters`" + " WHERE `publication_ID` = ? and `title`= ?;";
+                deleteChaptersQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Periodicals` (`publication_ID`, `issue_date`,`periodicity`) VALUES (?,?,?);";
+                insertPeriodicalQuery = connection.prepareStatement(query);
+                query = "UPDATE `Periodicals`" + " SET `issue_date` = ? WHERE `publication_ID`= ?;";
+                updatePeriodicalIssueDateQuery = connection.prepareStatement(query);
+                query = "UPDATE `Periodicals`" + " SET `periodicity` = ? WHERE `publication_ID`= ?;";
+                updatePeriodicalPeriodicityQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
+                deletePeriodicalQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `DistributorPayments` (`account_number`, `payment_date`, `amount_paid`) VALUES (?, ?, ?);";
+                insertDistributorPaymentQuery = connection.prepareStatement(query);
+                query = "UPDATE `DistributorPayments`" + " SET `amount_paid` = ? WHERE `account_number`= ? AND `payment_date`=?;";
+                updateDistributorPaymentAmountPaidQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `DistributorPayments`" + " WHERE `account_number`= ? AND `payment_date`=?;";
+                deleteDistributorPaymentQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`) VALUES (?, ?, ?, ?);";
+                insertArticleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleTitleQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `text` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleTextQuery = connection.prepareStatement(query);
+                query = "UPDATE `Articles` SET `creation_date` = ? WHERE `publication_ID`= ? AND `title`=?;";
+                updateArticleCreationDateQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Articles`" + " WHERE `publication_ID` = ? and `title`= ?;";
+                deleteArticleQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                insertDistributorQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
+                updateDistributorAccountNumberQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `phone` = ? WHERE account_number = ?;";
+                updateDistributorPhoneQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `city` = ? WHERE account_number = ?;";
+                updateDistributorCityQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `street_address` = ? WHERE account_number = ?;";
+                updateDistributorStreetAddressQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `type` = ? WHERE account_number = ?;";
+                updateDistributorTypeQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `name` = ? WHERE account_number = ?;";
+                updateDistributorNameQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `balance` = ? WHERE account_number = ?;";
+                updateDistributorBalanceQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Distributors`" + " SET `contact_person` = ? WHERE account_number = ?;";
+                updateDistributorContactPersonQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
+
+                query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                insertOrderQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
+                updateOrderDateQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `order_delivery_date` = ? WHERE order_number = ?;";
+                updateOrderDeliveryDateQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `number_of_copies` = ? WHERE order_number = ?;";
+                updateOrderNumberOfCopiesQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `total_cost` = ? WHERE order_number = ?;";
+                updateOrderTotalCostQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Orders`" + " SET `shipping_cost` = ? WHERE order_number = ?;";
+                updateOrderShippingCostQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Orders`" + " WHERE `order_number` = ?;";
+                deleteOrderQuery = connection.prepareStatement(query);
+
+                query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
+                insertPaymentQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE staff_ID = ? AND salary_date = ?;";
+                query =  "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE order_number = ?;";
+                updatePaymentAmountQuery = connection.prepareStatement(query);
+                query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
+                updatePaymentCollectionDateQuery = connection.prepareStatement(query);
+                query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";;
+                deletePaymentQuery = connection.prepareStatement(query);
+
+
+
+        }
+        catch (SQLException e){
+                e.printStackTrace();
+        }
+    }
+
+    public static void deletePayment(int staff_ID, String salary_date){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deletePaymentQuery.setInt(1,staff_ID);
+                        deletePaymentQuery.setString(2,salary_date);
+                        deletePaymentQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+   
+
+    }
+    public static void deleteDistributor(int account_number){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteDistributorQuery.setInt(1,account_number);
+                        deleteDistributorQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+
+    }
+    
+    public static void updateDistributor(int account_number, String newValue, String option){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateDistributorAccountNumberQuery.setInt(1,Integer.parseInt(newValue));
+                                        updateDistributorAccountNumberQuery.setInt(2,account_number);
+                                        updateDistributorAccountNumberQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateDistributorPhoneQuery.setString(1,newValue);
+                                        updateDistributorPhoneQuery.setInt(2,account_number);
+                                        updateDistributorPhoneQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateDistributorCityQuery.setString(1,newValue);
+                                        updateDistributorCityQuery.setInt(2,account_number);
+                                        updateDistributorCityQuery.executeUpdate();
+                                        break;
+
+                                case "5":
+                                        updateDistributorStreetAddressQuery.setString(1,newValue);
+                                        updateDistributorStreetAddressQuery.setInt(2,account_number);
+                                        updateDistributorStreetAddressQuery.executeUpdate();
+                                        break;
+                                case "6":
+                                        updateDistributorTypeQuery.setString(1,newValue);
+                                        updateDistributorTypeQuery.setInt(2,account_number);
+                                        updateDistributorTypeQuery.executeUpdate();
+                                        break;
+                                case "8":
+                                        updateDistributorNameQuery.setString(1,newValue);
+                                        updateDistributorNameQuery.setInt(2,account_number);
+                                        updateDistributorNameQuery.executeUpdate();
+                                        break;
+                                case "9":
+                                        updateDistributorBalanceQuery.setInt(1,Integer.parseInt(newValue));
+                                        updateDistributorBalanceQuery.setInt(2,account_number);
+                                        updateDistributorBalanceQuery.executeUpdate();
+                                        break;
+                                case "10":
+                                        updateDistributorContactPersonQuery.setString(1,newValue);
+                                        updateDistributorContactPersonQuery.setInt(2,account_number);
+                                        updateDistributorContactPersonQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+    }
+    public static void insertPublication(int publicationID, String title, String topic, String type, Double price )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPublicationQuery.setInt(1,publicationID);
+                        insertPublicationQuery.setString(2,title);
+                        insertPublicationQuery.setString(3,topic);
+                        insertPublicationQuery.setString(4,type);
+                        insertPublicationQuery.setDouble(5,price);
+                        insertPublicationQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+     public static void updatePublication(int publicationID, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updatePublicationTitleQuery.setString(1,newValue);
+                                        updatePublicationTitleQuery.setInt(2,publicationID);
+                                        updatePublicationTitleQuery.executeUpdate();
+
+                                        break;
+
+                                case "2":
+                                        updatePublicationTopicQuery.setString(1,newValue);
+                                        updatePublicationTopicQuery.setInt(2,publicationID);
+                                        updatePublicationTopicQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updatePublicationTypeQuery.setString(1,newValue);
+                                        updatePublicationTypeQuery.setInt(2,publicationID);
+                                        updatePublicationTypeQuery.executeUpdate();
+                                        break;
+
+                                case "4":
+                                        updatePublicationPriceQuery.setString(1,newValue);
+                                        updatePublicationPriceQuery.setInt(2,publicationID);
+                                        updatePublicationPriceQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertBook(int publicationID, int isbn, int edition, String publicationDate )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertBookQuery.setInt(1,publicationID);
+                        insertBookQuery.setInt(2,isbn);
+                        insertBookQuery.setInt(3,edition);
+                        insertBookQuery.setString(4,publicationDate);
+                        insertBookQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteBook(int publicationID)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteBookQuery.setInt(1,publicationID);
+                        deleteBookQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void updateBook(int publicationID, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateBookISBNQuery.setString(1,newValue);
+                                        updatePublicationTitleQuery.setInt(2,publicationID);
+                                        updatePublicationTitleQuery.executeUpdate();
+
+                                        break;
+
+                                case "2":
+                                        updateBookEditionQuery.setString(1,newValue);
+                                        updateBookEditionQuery.setInt(2,publicationID);
+                                        updateBookEditionQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateBookPublicationDateQuery.setString(1,newValue);
+                                        updateBookPublicationDateQuery.setInt(2,publicationID);
+                                        updateBookPublicationDateQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+    }
+
+    public static void insertPeriodical(int publicationID, String issueDate, String periodicity )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPeriodicalQuery.setInt(1,publicationID);
+                        insertPeriodicalQuery.setString(2,issueDate);
+                        insertPeriodicalQuery.setString(3,periodicity);
+                        insertPeriodicalQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void updatePeriodical(int publicationID, String option, String newValue )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updatePeriodicalIssueDateQuery.setString(1,newValue);
+                                        updatePeriodicalIssueDateQuery.setInt(2,publicationID);
+                                        updatePeriodicalIssueDateQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updatePeriodicalPeriodicityQuery.setString(1,newValue);
+                                        updatePeriodicalPeriodicityQuery.setInt(2,publicationID);
+                                        updatePeriodicalPeriodicityQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+      public static void deletePeriodical(int publicationID )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertPeriodicalQuery.setInt(1,publicationID);
+                        insertPeriodicalQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertDistributor(int accountNumber, String phone, String city, String streetAddress,
+    String type, String name, Double balance, String contactPerson )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertDistributorQuery.setInt(1,accountNumber);
+                        insertDistributorQuery.setString(2,phone);
+                        insertDistributorQuery.setString(3,city);
+                        insertDistributorQuery.setString(4,streetAddress);
+                        insertDistributorQuery.setString(5,type);
+                        insertDistributorQuery.setString(6,name);
+                        insertDistributorQuery.setDouble(7,balance);
+                        insertDistributorQuery.setString(8,contactPerson);
+                        insertDistributorQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteChapter(int publicationID, String title )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteChaptersQuery.setInt(1,publicationID);
+                        deleteChaptersQuery.setString(2,title);
+                        deleteChaptersQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertChapter(int publicationID, String title, String text )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertChapterQuery.setInt(1,publicationID);
+                        insertChapterQuery.setString(2,title);
+                        insertChapterQuery.setString(3,text);
+                        insertChapterQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+      public static void updateChapter(int publicationID, String title, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+                                case "1":
+                                        updateChapterTitleQuery.setString(1,newValue);
+                                        updateChapterTitleQuery.setInt(2,publicationID);
+                                        updateChapterTitleQuery.setString(3,title);
+                                        updateChapterTitleQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateChapterTextQuery.setString(1,newValue);
+                                        updateChapterTextQuery.setInt(2,publicationID);
+                                        updateChapterTextQuery.setString(3,title);
+                                        updateChapterTextQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void insertArticle(int publicationID, String title, String text, String creationDate )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        insertArticleQuery.setInt(1,publicationID);
+                        insertArticleQuery.setString(2,title);
+                        insertArticleQuery.setString(3,text);
+                        insertArticleQuery.setString(4,creationDate);
+                        insertArticleQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void deleteArticle(int publicationID, String title)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteArticleQuery.setInt(1,publicationID);
+                        deleteArticleQuery.setString(2,title);
+                        deleteArticleQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+    public static void updateArticle(int publicationID, String title, String option, String newValue)
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        switch (option){
+
+                                case "1":
+                                        updateArticleTitleQuery .setString(1,newValue);
+                                        updateArticleTitleQuery.setInt(2,publicationID);
+                                        updateArticleTitleQuery.setString(3,title);
+                                        updateArticleTitleQuery.executeUpdate();
+                                        break;
+
+                                case "2":
+                                        updateArticleTextQuery.setString(1,newValue);
+                                        updateArticleTextQuery.setInt(2,publicationID);
+                                        updateArticleTextQuery.setString(3,title);
+                                        updateArticleTextQuery.executeUpdate();
+                                        break;
+
+                                case "3":
+                                        updateArticleCreationDateQuery.setString(1,newValue);
+                                        updateArticleCreationDateQuery.setInt(2,publicationID);
+                                        updateArticleCreationDateQuery.setString(3,title);
+                                        updateBookEditionQuery.executeUpdate();
+                                        break;
+
+                                default:
+                                        System.out.println("Cannot perform the update operation");
+                                        break;
+
+                        }
+
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+    }
+
+    public static void editorAssignment(int staffID, int publicationID )
+    {
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        editorAssignmentQuery.setInt(1,staffID);
+                        editorAssignmentQuery.setInt(2,publicationID);
+                        editorAssignmentQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+    }
+
+
+
+
+    public static void insertOrder(int order_number, int publication_ID, int distributor_account_no, String order_date, String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost){
+        try {
+                connection.setAutoCommit(false);
+              try {
+                      insertOrderQuery.setInt(1,order_number);
+                      insertOrderQuery.setInt(2,publication_ID);
+                      insertOrderQuery.setInt(3, distributor_account_no);
+                      insertOrderQuery.setString(4, order_date);
+                      insertOrderQuery.setString(5, order_delivery_date);
+                      insertOrderQuery.setInt(6, number_of_copies);
+                      insertOrderQuery.setDouble(7, total_cost);
+                      insertOrderQuery.setDouble(8, shipping_cost);
+                      insertOrderQuery.executeUpdate();
+                      connection.commit();
+              } catch (SQLException e) {
+                  connection.rollback();
+                  e.printStackTrace();
+              } finally {
+                  connection.setAutoCommit(true);
+              }
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+
+    }
+
+    public void updateOrder(String newValue, String option, int order_number){
+        try {
+                connection.setAutoCommit(false);
+                try {
+                    switch (option) {
+    
+                        case "1":
+                                updateOrderDateQuery.setString(1, newValue );
+                                updateOrderDateQuery.setInt(2, order_number);
+                                updateOrderDateQuery.executeUpdate();
+                                break;
+                        case "2":
+                                updateOrderDeliveryDateQuery.setString(1, newValue);
+                                updateOrderDeliveryDateQuery.setInt(2, order_number);
+                                updateOrderDeliveryDateQuery.executeUpdate();
+                                break;
+                        case "3":
+                                updateOrderNumberOfCopiesQuery.setInt(1, Integer.parseInt(newValue));
+                                updateOrderNumberOfCopiesQuery.setInt(2, order_number);
+                                updateOrderNumberOfCopiesQuery.executeUpdate();
+                        case "4":
+                                updateOrderTotalCostQuery.setDouble(1, Double.parseDouble(newValue));
+                                updateOrderTotalCostQuery.setInt(2, order_number);
+                                updateOrderTotalCostQuery.executeUpdate();
+                        case "5":
+                                updateOrderShippingCostQuery.setDouble(1, Double.parseDouble(newValue));
+                                updateOrderShippingCostQuery.setInt(2, order_number);
+                                updateOrderShippingCostQuery.executeUpdate();
+                        default:
+                                System.out.println("Cannot perform the update operation");
+                                break;
+                    }
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    e.printStackTrace();
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } 
+
+    }
+
+    public static void deleteOrder(int order_number){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteOrderQuery.setInt(1,order_number);
+                        deleteOrderQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
+
+    }
+    public static void insertPayment(int staff_ID, String salary_date, double payment_amount, String collection_date){
+        try {
+                connection.setAutoCommit(false);
+              try {
+                      insertPaymentQuery.setInt(1,staff_ID);
+                      insertOrderQuery.setString(2,salary_date);
+                      insertOrderQuery.setDouble(3, payment_amount);
+                      insertOrderQuery.setString(4, collection_date);
+                      insertOrderQuery.executeUpdate();
+                      connection.commit();
+              } catch (SQLException e) {
+                  connection.rollback();
+                  e.printStackTrace();
+              } finally {
+                  connection.setAutoCommit(true);
+              }
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+
+    }
+
+    public static void updatePayment(String option, String newValue, int staff_ID, String salary_date){
+        try {
+                connection.setAutoCommit(false);
+                try {
+                    switch (option) {
+    
+                        case "1":
+                                updatePaymentAmountQuery.setDouble(1, Double.parseDouble(newValue));
+                                updatePaymentAmountQuery.setInt(2, staff_ID);
+                                updatePaymentAmountQuery.setString(2, salary_date);
+                                updatePaymentAmountQuery.executeUpdate();
+                                break;
+                        case "2":
+                                updatePaymentCollectionDateQuery.setString(1, newValue);
+                                updatePaymentCollectionDateQuery.setInt(2, staff_ID);
+                                updatePaymentCollectionDateQuery.setString(2, salary_date);
+                                updatePaymentCollectionDateQuery.executeUpdate();
+                                break;
+                        default:
+                                System.out.println("Cannot perform the update operation");
+                                break;
+                    }
+                    connection.commit();
+                } catch (SQLException e) {
+                    connection.rollback();
+                    e.printStackTrace();
+                } finally {
+                    connection.setAutoCommit(true);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } 
+
+    }
+    
     public static void main(String[] args) {
 
         System.out.println("***************************************************************");
@@ -83,7 +1046,7 @@ public class WolfPubDB {
                     + "`street_address` VARCHAR(255) NOT NULL,"
                     + "`type` VARCHAR(255) NOT NULL,"
                     + "`name` VARCHAR(255) NOT NULL,"
-                    + "`balance` INT NOT NULL,"
+                    + "`balance` DECIMAL(8,2) NOT NULL,"
                     + "`contact_person` VARCHAR(255) NOT NULL,"
                     + "PRIMARY KEY(`account_number`)"
                     + ");";
@@ -403,7 +1366,7 @@ public class WolfPubDB {
                     "INSERT INTO `WritesBook;` (`staff_ID`, `publication_ID`) VALUES (6994, 1003);");
             statement.executeUpdate(
                     "INSERT INTO `WritesBook;` (`staff_ID`, `publication_ID`) VALUES (6996, 1004);");
-                    
+
         } catch (SQLException e) {
             connection.rollback();
             e.printStackTrace();
