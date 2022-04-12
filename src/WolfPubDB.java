@@ -187,7 +187,7 @@ public class WolfPubDB {
                 updatePaymentAmountQuery = connection.prepareStatement(query);
                 query =  "UPDATE `Payment`" + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                 updatePaymentCollectionDateQuery = connection.prepareStatement(query);
-                query = "";
+                query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";;
                 deletePaymentQuery = connection.prepareStatement(query);
 
 
@@ -196,6 +196,30 @@ public class WolfPubDB {
         catch (SQLException e){
                 e.printStackTrace();
         }
+    }
+
+    public static void deletePayment(int staff_ID, String salary_date){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deletePaymentQuery.setInt(1,staff_ID);
+                        deletePaymentQuery.setString(2,salary_date);
+                        deletePaymentQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+   
+
     }
     public static void deleteDistributor(int account_number){
         try{
@@ -868,6 +892,29 @@ public class WolfPubDB {
             } catch (SQLException e) {
                 e.printStackTrace();
             } 
+
+    }
+
+    public static void deleteOrder(int order_number){
+        try{
+                connection.setAutoCommit(false);
+                try{
+                        deleteOrderQuery.setInt(1,order_number);
+                        deleteOrderQuery.executeUpdate();
+                        connection.commit();
+                }
+                catch(SQLException e){
+                        connection.rollback();
+                        e.printStackTrace();
+                }
+                finally{
+                        connection.setAutoCommit(true);
+                }
+        }
+        catch(SQLException e){
+                e.printStackTrace();
+        }
+
 
     }
     public static void insertPayment(int staff_ID, String salary_date, double payment_amount, String collection_date){
