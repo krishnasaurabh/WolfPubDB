@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.util.Scanner;
 
 public class WolfPubDB {
-    static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/kvankad";
+    static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
 
         private static Connection connection = null;
         private static Statement statement = null;
