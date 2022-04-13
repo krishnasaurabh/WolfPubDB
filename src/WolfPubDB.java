@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.util.Scanner;
 
 public class WolfPubDB {
-        static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
+    static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
 
         private static Connection connection = null;
         private static Statement statement = null;
@@ -76,6 +76,35 @@ public class WolfPubDB {
         private static PreparedStatement updatePaymentAmountQuery;
         private static PreparedStatement updatePaymentCollectionDateQuery;
         private static PreparedStatement deletePaymentQuery;
+
+        // reports
+
+        private static PreparedStatement copiesPerDistributorPerMonthlyReportQuery;
+        private static PreparedStatement monthlyTotalRevenueReportQuery;
+        private static PreparedStatement monthlyTotalExpenseReportQuery;
+        private static PreparedStatement currentTotalDistributorsReportQuery;
+        private static PreparedStatement totalRevenuePerCityReportQuery;
+        private static PreparedStatement totalRevenuePerDistibutorReportQuery;
+        private static PreparedStatement totalRevenuePerLocationReportQuery;
+        private static PreparedStatement totalStaffPaymentsPerPeriodPerWorkTypeReportQuery;
+
+        // select statements
+
+        private static PreparedStatement showPublications;
+        private static PreparedStatement showStaff;
+        private static PreparedStatement showBooks;
+        private static PreparedStatement showOrders;
+        private static PreparedStatement showEdits;
+        private static PreparedStatement showPayments;
+        private static PreparedStatement showDistributors;
+        private static PreparedStatement showDistributorPayments;
+        private static PreparedStatement showEditors;
+        private static PreparedStatement showAuthors;
+        private static PreparedStatement showPeriodicals;
+        private static PreparedStatement showChapters;
+        private static PreparedStatement showArticles;
+        private static PreparedStatement showWritesBooks;
+        private static PreparedStatement showWritesArticles;
 
         public static void generateDDLAndDMLStatements(Connection connection) {
                 String query;
@@ -192,8 +221,143 @@ public class WolfPubDB {
                                         + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                         updatePaymentCollectionDateQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";
-                        ;
+
                         deletePaymentQuery = connection.prepareStatement(query);
+
+                    // report queries
+
+                    query = "  SELECT   "+
+                            "  EXTRACT(YEAR FROM order_date) as year,   "+
+                            "  EXTRACT(MONTH FROM order_date) as month,distributor_account_no, publication_ID,   "+
+                            "  SUM(total_cost) AS order_value,   "+
+                            "  SUM(number_of_copies) AS total_copies  "+
+                            "  FROM Orders  "+
+                            "  GROUP BY EXTRACT(YEAR FROM order_date), EXTRACT(MONTH FROM order_date), distributor_account_no, publication_ID;  ";
+                    copiesPerDistributorPerMonthlyReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  EXTRACT(YEAR FROM payment_date) AS year,   "+
+                            "  EXTRACT(MONTH FROM payment_date) AS month,    "+
+                            "  SUM(amount_paid) AS revenue   "+
+                            "  FROM DistributorPayments  "+
+                            "  GROUP BY EXTRACT(YEAR FROM payment_date), EXTRACT(MONTH FROM payment_date); ";
+                    monthlyTotalRevenueReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT  "+
+                            "  year,   "+
+                            "  month,    "+
+                            "  SUM(expenses) AS expenses   "+
+                            "  FROM(  "+
+                            "  SELECT   "+
+                            "  EXTRACT(YEAR FROM salary_date) AS year,   "+
+                            "  EXTRACT(MONTH FROM salary_date) AS month,  "+
+                            "  SUM(payment_amount) AS expenses   "+
+                            "  FROM Payments  "+
+                            "  GROUP BY EXTRACT(YEAR FROM salary_date),   "+
+                            "  EXTRACT(MONTH FROM salary_date)  "+
+                            "  UNION  "+
+                            "  SELECT   "+
+                            "  EXTRACT(YEAR FROM order_delivery_date) AS year,  "+
+                            "  EXTRACT(MONTH FROM order_delivery_date) AS month,  "+
+                            "  SUM(shipping_cost) AS expenses   "+
+                            "  FROM Orders  "+
+                            "  GROUP BY EXTRACT(YEAR FROM order_delivery_date),  "+
+                            "  EXTRACT(MONTH FROM order_delivery_date)  "+
+                            "  ) AS Expenses  "+
+                            "  GROUP BY year, month;";
+                    monthlyTotalExpenseReportQuery = connection.prepareStatement(query);
+
+
+
+                    query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
+                    currentTotalDistributorsReportQuery = connection.prepareStatement(query);
+
+                    query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
+                            "FROM"+
+                            "Distributors D NATURAL JOIN DistributorPayments DP"+
+                            "GROUP BY city;";
+                    totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  account_number AS distributor_account_no,   "+
+                            "  sum(amount_paid) as revenue  "+
+                            "  FROM DistributorPayments  "+
+                            "  GROUP BY account_number;";
+                    totalRevenuePerDistibutorReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  city,   "+
+                            "  street_address,   "+
+                            "  sum(amount_paid) as revenue  "+
+                            "  FROM Distributors D NATURAL JOIN DistributorPayments DP  "+
+                            "  GROUP BY city, street_address;  ";
+                    totalRevenuePerLocationReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  S.role AS staff_role,   "+
+                            "  A.type AS staff_type,   "+
+                            "  SUM(payment_amount) AS total_payments  "+
+                            "  FROM Staff S NATURAL JOIN Authors A   "+
+                            "  NATURAL JOIN Payments SP   "+
+                            "  WHERE salary_date >= ? AND   "+
+                            "  salary_date <= ? "+
+                            "  GROUP BY S.role , A.type  "+
+                            "  UNION  "+
+                            "  SELECT   "+
+                            "  S.role AS staff_role,   "+
+                            "  E.type AS staff_type,   "+
+                            "  SUM(payment_amount) AS total_payments  "+
+                            "  FROM Staff S NATURAL JOIN Editors E   "+
+                            "  NATURAL JOIN Payments SP   "+
+                            "  WHERE salary_date >= ? AND   "+
+                            "  salary_date <= ?  "+
+                            "  GROUP BY S.role , E.type;  ";
+                    totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Publications;";
+                    showPublications = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Staff;";
+                    showStaff = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Books;";
+                    showBooks = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Orders;";
+                    showOrders = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Edits;";
+                    showEdits = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Payments;";
+                    showPayments = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Distributors;";
+                    showDistributors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM DistributorPayments;";
+                    showDistributorPayments = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Editors;";
+                    showEditors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Authors;";
+                    showAuthors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Periodicals;";
+                    showPeriodicals = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Chapters;";
+                    showChapters = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Articles;";
+                    showArticles = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM WritesBook;";
+                    showWritesBooks = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM WritesArticles;";
+                    showWritesArticles = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
                         e.printStackTrace();
@@ -798,14 +962,17 @@ public class WolfPubDB {
                                                 updateOrderNumberOfCopiesQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateOrderNumberOfCopiesQuery.setInt(2, order_number);
                                                 updateOrderNumberOfCopiesQuery.executeUpdate();
+                                                break;
                                         case "4":
                                                 updateOrderTotalCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderTotalCostQuery.setInt(2, order_number);
                                                 updateOrderTotalCostQuery.executeUpdate();
+                                                break;
                                         case "5":
                                                 updateOrderShippingCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderShippingCostQuery.setInt(2, order_number);
                                                 updateOrderShippingCostQuery.executeUpdate();
+                                                break;
                                         default:
                                                 System.out.println("Cannot perform the update operation");
                                                 break;
@@ -918,6 +1085,26 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
+        public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
+                try {
+                        connection.setAutoCommit(false);
+                try {
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                } catch (SQLException e) {
+                        connection.rollback();
+                        e.printStackTrace();
+                } finally {
+                        connection.setAutoCommit(true);
+                }
+                } catch (SQLException e) {
+                e.printStackTrace();
+                }
+        }
+
+
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1019,7 +1206,7 @@ public class WolfPubDB {
                         System.out.println("4.  Total current number of distributors");
                         System.out.println("5.  Total revenue (since inception) per city");
                         System.out.println("6.  Total revenue (since inception) per distributor");
-                        System.out.println("7.  Total revenue (since inception) per location");     
+                        System.out.println("7.  Total revenue (since inception) per location");
                         System.out.println("8.  Total payments to the editors and authors");
                         System.out.println("---------------MENU ACTIONS---------------");
                         System.out.println("9. Go back to previous Menu");
