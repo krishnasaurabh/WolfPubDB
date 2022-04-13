@@ -1085,26 +1085,26 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
-    public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
-        try {
-                connection.setAutoCommit(false);
-              try {
-                      totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
-                      totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
-                      totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
-                      totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
-              } catch (SQLException e) {
-                  connection.rollback();
-                  e.printStackTrace();
-              } finally {
-                  connection.setAutoCommit(true);
-              }
-          } catch (SQLException e) {
-              e.printStackTrace();
-          }
-    }
+        public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
+                try {
+                        connection.setAutoCommit(false);
+                try {
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                } catch (SQLException e) {
+                        connection.rollback();
+                        e.printStackTrace();
+                } finally {
+                        connection.setAutoCommit(true);
+                }
+                } catch (SQLException e) {
+                e.printStackTrace();
+                }
+        }
 
-    public static void main(String[] args) {
+
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
