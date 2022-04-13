@@ -5,6 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class WolfPubDB {
@@ -14,6 +19,13 @@ public class WolfPubDB {
         private static Statement statement = null;
         private static ResultSet result = null;
         static Scanner scanner = null;
+
+        private static final String HORIZONTAL_SEP = "-";
+        private static String verticalSep = "|";
+        private static String joinSep = " ";
+        private static String[] headers;
+        private static List<String[]> rows = new ArrayList<>();
+        private static boolean rightAlign;
 
         private static PreparedStatement editorAssignmentQuery;
         private static PreparedStatement editorUnAssignmentQuery;
@@ -1013,13 +1025,14 @@ public class WolfPubDB {
                         clearConsoleScreen();
                         System.out.println("\nDistributor Management Menu\n");
                         System.out.println("---------------Monthly Reports---------------");
-                        System.out.println("1.  Number and total price of copies of each publication bought per distributor");
+                        System.out.println(
+                                        "1.  Number and total price of copies of each publication bought per distributor");
                         System.out.println("2.  Total revenue of the publishing house");
                         System.out.println("3.  Total expenses ");
                         System.out.println("4.  Total current number of distributors");
                         System.out.println("5.  Total revenue (since inception) per city");
                         System.out.println("6.  Total revenue (since inception) per distributor");
-                        System.out.println("7.  Total revenue (since inception) per location");     
+                        System.out.println("7.  Total revenue (since inception) per location");
                         System.out.println("8.  Total payments to the editors and authors");
                         System.out.println("---------------MENU ACTIONS---------------");
                         System.out.println("9. Go back to previous Menu");
@@ -1048,6 +1061,20 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayAllEditors() {
+                try {
+                        result = statement.executeQuery("Select * from Editors;");
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
 
         public static void displayStaffMenu() {
                 while (true) {
@@ -1060,21 +1087,23 @@ public class WolfPubDB {
                         System.out.println("4.  Assign Editor to Publication");
                         System.out.println("5.  Remove Editor as a publication editor");
                         System.out.println("6.  Find Editor");
+                        System.out.println("7.  Show all Editors");
                         System.out.println("---------------Authors---------------");
-                        System.out.println("7.  Add a new Autor");
-                        System.out.println("8.  Update an Author");
-                        System.out.println("9.  Delete an author");
-                        System.out.println("10. Add an author to a Book");
-                        System.out.println("11. Add an author to an Article");
-                        System.out.println("12. Remove an author to a Book");
-                        System.out.println("13. Remove an author to a Article");
-                        System.out.println("14. Find Authors");
+                        System.out.println("8.  Add a new Autor");
+                        System.out.println("9.  Update an Author");
+                        System.out.println("10.  Delete an author");
+                        System.out.println("11. Add an author to a Book");
+                        System.out.println("12. Add an author to an Article");
+                        System.out.println("13. Remove an author to a Book");
+                        System.out.println("14. Remove an author to a Article");
+                        System.out.println("15. Find Authors");
+                        System.out.println("16.  Show all Authors");
                         System.out.println("---------------Staff Payment---------------");
-                        System.out.println("15. Enter payment for Staff");
-                        System.out.println("16. Update Date of collection of payment for Staff");
+                        System.out.println("17. Enter payment for Staff");
+                        System.out.println("18. Update Date of collection of payment for Staff");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("17. Go back to previous Menu");
-                        System.out.println("18. Exit");
+                        System.out.println("19. Go back to previous Menu");
+                        System.out.println("20. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -1087,9 +1116,14 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         break;
-                                case "17":
+                                case "7":
+                                        displayAllEditors();
+                                        break;
+                                case "16":
+                                        break;
+                                case "19":
                                         return;
-                                case "18":
+                                case "20":
                                         System.exit(0);
                                         break;
                                 default:
@@ -1886,4 +1920,103 @@ public class WolfPubDB {
                 }
                 close();
         }
+
+        public static void display_table(ResultSet resultSet) {
+                try {
+                        ResultSetMetaData rsmd = resultSet.getMetaData();
+                        int columnsNumber = rsmd.getColumnCount();
+                        String headers[] = new String[columnsNumber];
+
+                        for (int i = 0; i < columnsNumber; i++) {
+                                headers[i] = rsmd.getColumnName(i + 1);
+                        }
+                        setHeaders(headers);
+                        while (result.next()) {
+                                String data[] = new String[columnsNumber];
+                                for (int i = 0; i < columnsNumber; i++) {
+                                        String temp = result.getString(i + 1);
+                                        if (resultSet.wasNull()) {
+                                                data[i] = "NULL";
+                                        } else {
+                                                data[i] = temp;
+                                        }
+
+                                }
+                                addRow(data);
+                        }
+                        print();
+                        resetRows();
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void setRightAlign(boolean rightAlign1) {
+                rightAlign = rightAlign1;
+        }
+
+        public static void setHeaders(String... headers1) {
+                headers = headers1;
+        }
+
+        public static void addRow(String... cells) {
+                rows.add(cells);
+        }
+
+        public static void resetRows() {
+                rows.clear();
+        }
+
+        public static void print() {
+                int[] maxWidths = headers != null ? Arrays.stream(headers).mapToInt(String::length).toArray() : null;
+
+                for (String[] cells : rows) {
+                        if (maxWidths == null) {
+                                maxWidths = new int[cells.length];
+                        }
+                        if (cells.length != maxWidths.length) {
+                                throw new IllegalArgumentException(
+                                                "Number of row-cells and headers should be consistent");
+                        }
+                        for (int i = 0; i < cells.length; i++) {
+                                maxWidths[i] = Math.max(maxWidths[i], cells[i].length());
+                        }
+                }
+
+                if (headers != null) {
+                        printLine(maxWidths);
+                        printRow(headers, maxWidths);
+                        printLine(maxWidths);
+                }
+                for (String[] cells : rows) {
+                        printRow(cells, maxWidths);
+                }
+                if (headers != null) {
+                        printLine(maxWidths);
+                }
+        }
+
+        private static void printLine(int[] columnWidths) {
+                for (int i = 0; i < columnWidths.length; i++) {
+                        String line = String.join("", Collections.nCopies(columnWidths[i] +
+                                        verticalSep.length() + 1, HORIZONTAL_SEP));
+                        System.out.print(joinSep + line + (i == columnWidths.length - 1 ? joinSep : ""));
+                }
+                System.out.println();
+        }
+
+        private static void printRow(String[] cells, int[] maxWidths) {
+                for (int i = 0; i < cells.length; i++) {
+                        String s = cells[i];
+                        String verStrTemp = i == cells.length - 1 ? verticalSep : "";
+                        if (rightAlign) {
+                                System.out.printf("%s %" + maxWidths[i] + "s %s", verticalSep, s, verStrTemp);
+                        } else {
+                                System.out.printf("%s %-" + maxWidths[i] + "s %s", verticalSep, s, verStrTemp);
+                        }
+                }
+                System.out.println();
+        }
+
 }
