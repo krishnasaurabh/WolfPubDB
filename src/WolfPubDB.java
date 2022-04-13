@@ -929,18 +929,22 @@ public class WolfPubDB {
                         System.out.println("4.  Add a chapter to a Book");
                         System.out.println("5.  Update a chapter of a Book");
                         System.out.println("6.  Find books");
-                        System.out.println("---------------Periodicals---------------");
-                        System.out.println("7.  Add new Periodical");
-                        System.out.println("8.  Update Periodical");
-                        System.out.println("9.  Delete Periodical");
-                        System.out.println("10. Add an article to a Periodical");
-                        System.out.println("11. Update an article of a Periodical");
-                        System.out.println("12. Enter text of article");
-                        System.out.println("13. Update text of article");
-                        System.out.println("14. Find articles");
+                        System.out.println("7.  Show all Books");
+                        System.out.println("8.  Show all chapters for a Book");
+                        System.out.println("---------------PERIODICALS---------------");
+                        System.out.println("9.  Add new Periodical");
+                        System.out.println("10. Update Periodical");
+                        System.out.println("11. Delete Periodical");
+                        System.out.println("12. Add an article to a Periodical");
+                        System.out.println("13. Update an article of a Periodical");
+                        System.out.println("14. Enter text of article");
+                        System.out.println("15. Update text of article");
+                        System.out.println("16. Find articles");
+                        System.out.println("17. Show all periodicals");
+                        System.out.println("18. Show all articles for a periodical");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("15. Go back to previous Menu");
-                        System.out.println("16. Exit");
+                        System.out.println("19. Go back to previous Menu");
+                        System.out.println("20. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -953,9 +957,9 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         break;
-                                case "15":
+                                case "19":
                                         return;
-                                case "16":
+                                case "20":
                                         System.exit(0);
                                         break;
                                 default:
@@ -966,29 +970,20 @@ public class WolfPubDB {
 
         }
 
-        public static void displayStaffMenu() {
+        public static void displayDistributorMenu() {
                 while (true) {
                         clearConsoleScreen();
-                        System.out.println("\nStaff Management Menu\n");
-                        System.out.println("---------------Editors---------------");
-                        System.out.println("1.  Add a new book edition");
-                        System.out.println("2.  Update book edition");
-                        System.out.println("3.  Delete book edition ");
-                        System.out.println("4.  Add a chapter to a Book");
-                        System.out.println("5.  Update a chapter of a Book");
-                        System.out.println("6.  Find books");
-                        System.out.println("---------------Authors---------------");
-                        System.out.println("7.  Add new Periodical");
-                        System.out.println("8.  Update Periodical");
-                        System.out.println("9.  Delete Periodical");
-                        System.out.println("10. Add an article to a Periodical");
-                        System.out.println("11. Update an article of a Periodical");
-                        System.out.println("12. Enter text of article");
-                        System.out.println("13. Update text of article");
-                        System.out.println("14. Find articles");
+                        System.out.println("\nDistributor Management Menu\n");
+                        System.out.println("---------------Distributors---------------");
+                        System.out.println("1.  Add a new Distributor");
+                        System.out.println("2.  Update a Distributor");
+                        System.out.println("3.  Delete a Distributor ");
+                        System.out.println("4.  Place an order for a distributor");
+                        System.out.println("5.  Generate Bill for distributor");
+                        System.out.println("6.  Recieve Payment of distributor");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("15. Go back to previous Menu");
-                        System.out.println("16. Exit");
+                        System.out.println("7. Go back to previous Menu");
+                        System.out.println("8. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -1001,9 +996,9 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         break;
-                                case "15":
+                                case "7":
                                         return;
-                                case "16":
+                                case "8":
                                         System.exit(0);
                                         break;
                                 default:
@@ -1011,7 +1006,97 @@ public class WolfPubDB {
                                         break;
                         }
                 }
+        }
 
+        public static void displayReportsMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nDistributor Management Menu\n");
+                        System.out.println("---------------Monthly Reports---------------");
+                        System.out.println("1.  Number and total price of copies of each publication bought per distributor");
+                        System.out.println("2.  Total revenue of the publishing house");
+                        System.out.println("3.  Total expenses ");
+                        System.out.println("4.  Total current number of distributors");
+                        System.out.println("5.  Total revenue (since inception) per city");
+                        System.out.println("6.  Total revenue (since inception) per distributor");
+                        System.out.println("7.  Total revenue (since inception) per location");     
+                        System.out.println("8.  Total payments to the editors and authors");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("9. Go back to previous Menu");
+                        System.out.println("10. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        break;
+                                case "2":
+                                        break;
+                                case "3":
+                                        break;
+                                case "4":
+                                        break;
+                                case "9":
+                                        return;
+                                case "10":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+
+        public static void displayStaffMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nStaff Management Menu\n");
+                        System.out.println("---------------Editors---------------");
+                        System.out.println("1.  Add a new editor");
+                        System.out.println("2.  Update an editor");
+                        System.out.println("3.  Delete an editor ");
+                        System.out.println("4.  Assign Editor to Publication");
+                        System.out.println("5.  Remove Editor as a publication editor");
+                        System.out.println("6.  Find Editor");
+                        System.out.println("---------------Authors---------------");
+                        System.out.println("7.  Add a new Autor");
+                        System.out.println("8.  Update an Author");
+                        System.out.println("9.  Delete an author");
+                        System.out.println("10. Add an author to a Book");
+                        System.out.println("11. Add an author to an Article");
+                        System.out.println("12. Remove an author to a Book");
+                        System.out.println("13. Remove an author to a Article");
+                        System.out.println("14. Find Authors");
+                        System.out.println("---------------Staff Payment---------------");
+                        System.out.println("15. Enter payment for Staff");
+                        System.out.println("16. Update Date of collection of payment for Staff");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("17. Go back to previous Menu");
+                        System.out.println("18. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        break;
+                                case "2":
+                                        break;
+                                case "3":
+                                        break;
+                                case "4":
+                                        break;
+                                case "17":
+                                        return;
+                                case "18":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
         }
 
         public static void displayAdminMenu() {
@@ -1032,15 +1117,13 @@ public class WolfPubDB {
                                         displayPublicationsMenu();
                                         break;
                                 case "2":
-                                        // displayStaffMenu();
+                                        displayStaffMenu();
                                         break;
                                 case "3":
-                                        // displayAuthorMenu();
+                                        displayDistributorMenu();
                                         break;
                                 case "4":
-                                        // displayDistributorMenu();
-
-                                        // displayReportsMenu();
+                                        displayReportsMenu();
                                         break;
                                 case "5":
                                         return;
