@@ -354,7 +354,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "4":
-                                                updatePublicationPriceQuery.setString(1, newValue);
+                                                updatePublicationPriceQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updatePublicationPriceQuery.setInt(2, publicationID);
                                                 updatePublicationPriceQuery.executeUpdate();
                                                 break;
@@ -432,7 +432,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "2":
-                                                updateBookEditionQuery.setString(1, newValue);
+                                                updateBookEditionQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateBookEditionQuery.setInt(2, publicationID);
                                                 updateBookEditionQuery.executeUpdate();
                                                 break;
