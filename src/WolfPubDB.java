@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class WolfPubDB {
-    static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
+        static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
 
         private static Connection connection = null;
         private static Statement statement = null;
@@ -118,7 +118,7 @@ public class WolfPubDB {
         private static PreparedStatement showWritesBooks;
         private static PreparedStatement showWritesArticles;
 
-        public static void generateDDLAndDMLStatements(Connection connection) {
+        public static void generateDDLAndDMLStatements() {
                 String query;
                 try {
                         query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
@@ -236,140 +236,139 @@ public class WolfPubDB {
 
                         deletePaymentQuery = connection.prepareStatement(query);
 
-                    // report queries
+                        // report queries
 
-                    query = "  SELECT   "+
-                            "  EXTRACT(YEAR FROM order_date) as year,   "+
-                            "  EXTRACT(MONTH FROM order_date) as month,distributor_account_no, publication_ID,   "+
-                            "  SUM(total_cost) AS order_value,   "+
-                            "  SUM(number_of_copies) AS total_copies  "+
-                            "  FROM Orders  "+
-                            "  GROUP BY EXTRACT(YEAR FROM order_date), EXTRACT(MONTH FROM order_date), distributor_account_no, publication_ID;  ";
-                    copiesPerDistributorPerMonthlyReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM order_date) as year,   " +
+                                        "  EXTRACT(MONTH FROM order_date) as month,distributor_account_no, publication_ID,   "
+                                        +
+                                        "  SUM(total_cost) AS order_value,   " +
+                                        "  SUM(number_of_copies) AS total_copies  " +
+                                        "  FROM Orders  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM order_date), EXTRACT(MONTH FROM order_date), distributor_account_no, publication_ID;  ";
+                        copiesPerDistributorPerMonthlyReportQuery = connection.prepareStatement(query);
 
-                    query = "  SELECT   "+
-                            "  EXTRACT(YEAR FROM payment_date) AS year,   "+
-                            "  EXTRACT(MONTH FROM payment_date) AS month,    "+
-                            "  SUM(amount_paid) AS revenue   "+
-                            "  FROM DistributorPayments  "+
-                            "  GROUP BY EXTRACT(YEAR FROM payment_date), EXTRACT(MONTH FROM payment_date); ";
-                    monthlyTotalRevenueReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM payment_date) AS year,   " +
+                                        "  EXTRACT(MONTH FROM payment_date) AS month,    " +
+                                        "  SUM(amount_paid) AS revenue   " +
+                                        "  FROM DistributorPayments  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM payment_date), EXTRACT(MONTH FROM payment_date); ";
+                        monthlyTotalRevenueReportQuery = connection.prepareStatement(query);
 
-                    query = "  SELECT  "+
-                            "  year,   "+
-                            "  month,    "+
-                            "  SUM(expenses) AS expenses   "+
-                            "  FROM(  "+
-                            "  SELECT   "+
-                            "  EXTRACT(YEAR FROM salary_date) AS year,   "+
-                            "  EXTRACT(MONTH FROM salary_date) AS month,  "+
-                            "  SUM(payment_amount) AS expenses   "+
-                            "  FROM Payments  "+
-                            "  GROUP BY EXTRACT(YEAR FROM salary_date),   "+
-                            "  EXTRACT(MONTH FROM salary_date)  "+
-                            "  UNION  "+
-                            "  SELECT   "+
-                            "  EXTRACT(YEAR FROM order_delivery_date) AS year,  "+
-                            "  EXTRACT(MONTH FROM order_delivery_date) AS month,  "+
-                            "  SUM(shipping_cost) AS expenses   "+
-                            "  FROM Orders  "+
-                            "  GROUP BY EXTRACT(YEAR FROM order_delivery_date),  "+
-                            "  EXTRACT(MONTH FROM order_delivery_date)  "+
-                            "  ) AS Expenses  "+
-                            "  GROUP BY year, month;";
-                    monthlyTotalExpenseReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT  " +
+                                        "  year,   " +
+                                        "  month,    " +
+                                        "  SUM(expenses) AS expenses   " +
+                                        "  FROM(  " +
+                                        "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM salary_date) AS year,   " +
+                                        "  EXTRACT(MONTH FROM salary_date) AS month,  " +
+                                        "  SUM(payment_amount) AS expenses   " +
+                                        "  FROM Payments  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM salary_date),   " +
+                                        "  EXTRACT(MONTH FROM salary_date)  " +
+                                        "  UNION  " +
+                                        "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM order_delivery_date) AS year,  " +
+                                        "  EXTRACT(MONTH FROM order_delivery_date) AS month,  " +
+                                        "  SUM(shipping_cost) AS expenses   " +
+                                        "  FROM Orders  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM order_delivery_date),  " +
+                                        "  EXTRACT(MONTH FROM order_delivery_date)  " +
+                                        "  ) AS Expenses  " +
+                                        "  GROUP BY year, month;";
+                        monthlyTotalExpenseReportQuery = connection.prepareStatement(query);
 
+                        query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
+                        currentTotalDistributorsReportQuery = connection.prepareStatement(query);
 
+                        query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
+                                        "FROM" +
+                                        "Distributors D NATURAL JOIN DistributorPayments DP" +
+                                        "GROUP BY city;";
+                        totalRevenuePerCityReportQuery = connection.prepareStatement(query);
 
-                    query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
-                    currentTotalDistributorsReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT   " +
+                                        "  account_number AS distributor_account_no,   " +
+                                        "  sum(amount_paid) as revenue  " +
+                                        "  FROM DistributorPayments  " +
+                                        "  GROUP BY account_number;";
+                        totalRevenuePerDistibutorReportQuery = connection.prepareStatement(query);
 
-                    query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
-                            "FROM"+
-                            "Distributors D NATURAL JOIN DistributorPayments DP"+
-                            "GROUP BY city;";
-                    totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT   " +
+                                        "  city,   " +
+                                        "  street_address,   " +
+                                        "  sum(amount_paid) as revenue  " +
+                                        "  FROM Distributors D NATURAL JOIN DistributorPayments DP  " +
+                                        "  GROUP BY city, street_address;  ";
+                        totalRevenuePerLocationReportQuery = connection.prepareStatement(query);
 
-                    query = "  SELECT   "+
-                            "  account_number AS distributor_account_no,   "+
-                            "  sum(amount_paid) as revenue  "+
-                            "  FROM DistributorPayments  "+
-                            "  GROUP BY account_number;";
-                    totalRevenuePerDistibutorReportQuery = connection.prepareStatement(query);
+                        query = "  SELECT   " +
+                                        "  S.role AS staff_role,   " +
+                                        "  A.type AS staff_type,   " +
+                                        "  SUM(payment_amount) AS total_payments  " +
+                                        "  FROM Staff S NATURAL JOIN Authors A   " +
+                                        "  NATURAL JOIN Payments SP   " +
+                                        "  WHERE salary_date >= ? AND   " +
+                                        "  salary_date <= ? " +
+                                        "  GROUP BY S.role , A.type  " +
+                                        "  UNION  " +
+                                        "  SELECT   " +
+                                        "  S.role AS staff_role,   " +
+                                        "  E.type AS staff_type,   " +
+                                        "  SUM(payment_amount) AS total_payments  " +
+                                        "  FROM Staff S NATURAL JOIN Editors E   " +
+                                        "  NATURAL JOIN Payments SP   " +
+                                        "  WHERE salary_date >= ? AND   " +
+                                        "  salary_date <= ?  " +
+                                        "  GROUP BY S.role , E.type;  ";
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
 
-                    query = "  SELECT   "+
-                            "  city,   "+
-                            "  street_address,   "+
-                            "  sum(amount_paid) as revenue  "+
-                            "  FROM Distributors D NATURAL JOIN DistributorPayments DP  "+
-                            "  GROUP BY city, street_address;  ";
-                    totalRevenuePerLocationReportQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM Publications;";
+                        showPublications = connection.prepareStatement(query);
 
-                    query = "  SELECT   "+
-                            "  S.role AS staff_role,   "+
-                            "  A.type AS staff_type,   "+
-                            "  SUM(payment_amount) AS total_payments  "+
-                            "  FROM Staff S NATURAL JOIN Authors A   "+
-                            "  NATURAL JOIN Payments SP   "+
-                            "  WHERE salary_date >= ? AND   "+
-                            "  salary_date <= ? "+
-                            "  GROUP BY S.role , A.type  "+
-                            "  UNION  "+
-                            "  SELECT   "+
-                            "  S.role AS staff_role,   "+
-                            "  E.type AS staff_type,   "+
-                            "  SUM(payment_amount) AS total_payments  "+
-                            "  FROM Staff S NATURAL JOIN Editors E   "+
-                            "  NATURAL JOIN Payments SP   "+
-                            "  WHERE salary_date >= ? AND   "+
-                            "  salary_date <= ?  "+
-                            "  GROUP BY S.role , E.type;  ";
-                    totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM Staff;";
+                        showStaff = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Publications;";
-                    showPublications = connection.prepareStatement(query);
+                        query = "SELECT * FROM Books;";
+                        showBooks = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Staff;";
-                    showStaff = connection.prepareStatement(query);
+                        query = "SELECT * FROM Orders;";
+                        showOrders = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Books;";
-                    showBooks = connection.prepareStatement(query);
+                        query = "SELECT * FROM Edits;";
+                        showEdits = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Orders;";
-                    showOrders = connection.prepareStatement(query);
+                        query = "SELECT * FROM Payments;";
+                        showPayments = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Edits;";
-                    showEdits = connection.prepareStatement(query);
+                        query = "SELECT * FROM Distributors;";
+                        showDistributors = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Payments;";
-                    showPayments = connection.prepareStatement(query);
+                        query = "SELECT * FROM DistributorPayments;";
+                        showDistributorPayments = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Distributors;";
-                    showDistributors = connection.prepareStatement(query);
+                        query = "SELECT * FROM Editors;";
+                        showEditors = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM DistributorPayments;";
-                    showDistributorPayments = connection.prepareStatement(query);
+                        query = "SELECT * FROM Authors;";
+                        showAuthors = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Editors;";
-                    showEditors = connection.prepareStatement(query);
+                        query = "SELECT * FROM Periodicals;";
+                        showPeriodicals = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Authors;";
-                    showAuthors = connection.prepareStatement(query);
+                        query = "SELECT * FROM Chapters;";
+                        showChapters = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Periodicals;";
-                    showPeriodicals = connection.prepareStatement(query);
+                        query = "SELECT * FROM Articles;";
+                        showArticles = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Chapters;";
-                    showChapters = connection.prepareStatement(query);
+                        query = "SELECT * FROM WritesBook;";
+                        showWritesBooks = connection.prepareStatement(query);
 
-                    query = "SELECT * FROM Articles;";
-                    showArticles = connection.prepareStatement(query);
-
-                    query = "SELECT * FROM WritesBook;";
-                    showWritesBooks = connection.prepareStatement(query);
-
-                    query = "SELECT * FROM WritesArticles;";
-                    showWritesArticles = connection.prepareStatement(query);
+                        query = "SELECT * FROM WritesArticles;";
+                        showWritesArticles = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
                         e.printStackTrace();
@@ -1100,22 +1099,21 @@ public class WolfPubDB {
         public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
                 try {
                         connection.setAutoCommit(false);
-                try {
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                        try {
+                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
                 } catch (SQLException e) {
-                        connection.rollback();
                         e.printStackTrace();
-                } finally {
-                        connection.setAutoCommit(true);
-                }
-                } catch (SQLException e) {
-                e.printStackTrace();
                 }
         }
-
 
         public static void displayPublicationsMenu() {
                 while (true) {
@@ -1248,9 +1246,9 @@ public class WolfPubDB {
                 }
         }
 
-        public static void displayAllEditors() {
+        public static void displayAllAuthors() {
                 try {
-                        result = statement.executeQuery("Select * from Editors;");
+                        result = showAuthors.executeQuery();
                         if (!result.next()) {
                                 System.out.println("No Editors exist");
                                 return;
@@ -1259,7 +1257,22 @@ public class WolfPubDB {
                         display_table(result);
                         System.out.println();
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        e.printStackTrace();
+                }
+        }
+
+        public static void displayAllEditors() {
+                try {
+                        result = showEditors.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        e.printStackTrace();
                 }
         }
 
@@ -1307,6 +1320,7 @@ public class WolfPubDB {
                                         displayAllEditors();
                                         break;
                                 case "16":
+                                        displayAllAuthors();
                                         break;
                                 case "19":
                                         return;
@@ -2048,6 +2062,7 @@ public class WolfPubDB {
         private static void initialize() {
                 try {
                         connectToDatabase();
+                        generateDDLAndDMLStatements();
                         System.out.println("Connection to WolfPubDB is successfull.");
                         scanner = new Scanner(System.in);
                 } catch (ClassNotFoundException e) {
