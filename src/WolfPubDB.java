@@ -360,7 +360,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "4":
-                                                updatePublicationPriceQuery.setString(1, newValue);
+                                                updatePublicationPriceQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updatePublicationPriceQuery.setInt(2, publicationID);
                                                 updatePublicationPriceQuery.executeUpdate();
                                                 break;
@@ -438,7 +438,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "2":
-                                                updateBookEditionQuery.setString(1, newValue);
+                                                updateBookEditionQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateBookEditionQuery.setInt(2, publicationID);
                                                 updateBookEditionQuery.executeUpdate();
                                                 break;
@@ -1216,7 +1216,6 @@ public class WolfPubDB {
                                         break;
                         }
                 }
-
         }
 
         public static void deleteOrder(int order_number) {
@@ -1353,8 +1352,6 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         // displayDistributorMenu();
-
-                                        // displayReportsMenu();
                                         break;
                                 case "5":
                                         displayDBAdminMenu();
@@ -2031,9 +2028,9 @@ public class WolfPubDB {
 
         public static void main(String[] args) {
 
-                System.out.println("***************************************************************");
-                System.out.println("Welcome to WolfaPubDB! Yes you read it right, we are WOLFAPACK!");
-                System.out.println("***************************************************************");
+                System.out.println("*********************");
+                System.out.println("Welcome to WolfPubDB!");
+                System.out.println("*********************");
                 initialize();
                 try {
                         displayMenu();
