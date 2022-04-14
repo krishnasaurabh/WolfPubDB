@@ -12,6 +12,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
+import javax.naming.spi.DirStateFactory.Result;
+import javax.sound.midi.SysexMessage;
+
 public class WolfPubDB {
         static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
 
@@ -21,6 +24,13 @@ public class WolfPubDB {
         private static ResultSet result = null;
 
         static Scanner scanner;
+
+        private static final String HORIZONTAL_SEP = "-";
+        private static String verticalSep = "|";
+        private static String joinSep = " ";
+        private static String[] headers;
+        private static List<String[]> rows = new ArrayList<>();
+        private static boolean rightAlign;
 
         private static final String HORIZONTAL_SEP = "-";
         private static String verticalSep = "|";
@@ -82,6 +92,8 @@ public class WolfPubDB {
         private static PreparedStatement updateDistributorBalanceQuery;
         private static PreparedStatement updateDistributorContactPersonQuery;
         private static PreparedStatement deleteDistributorQuery;
+        private static PreparedStatement generateBillQuery;
+        private static PreparedStatement deduceBalanceQuery;
 
         private static PreparedStatement insertOrderQuery;
         private static PreparedStatement updateOrderDateQuery;
@@ -90,6 +102,7 @@ public class WolfPubDB {
         private static PreparedStatement updateOrderTotalCostQuery;
         private static PreparedStatement updateOrderShippingCostQuery;
         private static PreparedStatement deleteOrderQuery;
+        private static PreparedStatement getOrderID;
 
         private static PreparedStatement insertPaymentQuery;
         private static PreparedStatement updatePaymentAmountQuery;
@@ -205,7 +218,7 @@ public class WolfPubDB {
                         query = "Select * From `Articles` WHERE `publication_ID`= ?;";
                         displayArticlesQuery = connection.prepareStatement(query);
 
-                        query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                        query = "INSERT INTO Distributors(`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertDistributorQuery = connection.prepareStatement(query);
                         query = "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
                         updateDistributorAccountNumberQuery = connection.prepareStatement(query);
@@ -224,6 +237,11 @@ public class WolfPubDB {
                         query = "UPDATE `Distributors`" + " SET `contact_person` = ? WHERE account_number = ?;";
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
+                        deleteDistributorQuery = connection.prepareStatement(query);
+                        query = "UPDATE `Distributors` d JOIN `Orders` o ON o.distributor_account_no = d.account_number SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
+                        generateBillQuery = connection.prepareStatement(query);
+                        query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
+                        deduceBalanceQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
@@ -239,6 +257,8 @@ public class WolfPubDB {
                         updateOrderShippingCostQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Orders`" + " WHERE `order_number` = ?;";
                         deleteOrderQuery = connection.prepareStatement(query);
+                        query = "SELECT order_number FROM Orders";
+                        getOrderID = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
                         insertPaymentQuery = connection.prepareStatement(query);
@@ -436,8 +456,7 @@ public class WolfPubDB {
                         try {
                                 switch (option) {
                                         case "1":
-                                                updateDistributorAccountNumberQuery.setInt(1,
-                                                                Integer.parseInt(newValue));
+                                                updateDistributorAccountNumberQuery.setInt(1,Integer.parseInt(newValue));
                                                 updateDistributorAccountNumberQuery.setInt(2, account_number);
                                                 updateDistributorAccountNumberQuery.executeUpdate();
                                                 break;
@@ -454,27 +473,27 @@ public class WolfPubDB {
                                                 updateDistributorCityQuery.executeUpdate();
                                                 break;
 
-                                        case "5":
+                                        case "4":
                                                 updateDistributorStreetAddressQuery.setString(1, newValue);
                                                 updateDistributorStreetAddressQuery.setInt(2, account_number);
                                                 updateDistributorStreetAddressQuery.executeUpdate();
                                                 break;
-                                        case "6":
+                                        case "5":
                                                 updateDistributorTypeQuery.setString(1, newValue);
                                                 updateDistributorTypeQuery.setInt(2, account_number);
                                                 updateDistributorTypeQuery.executeUpdate();
                                                 break;
-                                        case "8":
+                                        case "6":
                                                 updateDistributorNameQuery.setString(1, newValue);
                                                 updateDistributorNameQuery.setInt(2, account_number);
                                                 updateDistributorNameQuery.executeUpdate();
                                                 break;
-                                        case "9":
+                                        case "7":
                                                 updateDistributorBalanceQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateDistributorBalanceQuery.setInt(2, account_number);
                                                 updateDistributorBalanceQuery.executeUpdate();
                                                 break;
-                                        case "10":
+                                        case "8":
                                                 updateDistributorContactPersonQuery.setString(1, newValue);
                                                 updateDistributorContactPersonQuery.setInt(2, account_number);
                                                 updateDistributorContactPersonQuery.executeUpdate();
@@ -611,27 +630,74 @@ public class WolfPubDB {
 
         }
 
-        public static void updateBook(int publicationID, String option, String newValue) {
+        public static void updateBookMenu(){
+                System.out.println("1.  Update book edition");
+                System.out.println("2.  Update book ISBN");
+                System.out.println("3.  update the publication date of a book (Date format YYYY-DD-MM).");
+                System.out.println("4.  update the text of a chapter");
+                System.out.println("5.  update chapter title");
+                String option = scanner.next();
+                String value;
+                int pid;
+                String title;
                 try {
                         connection.setAutoCommit(false);
                         try {
                                 switch (option) {
                                         case "1":
-                                                updateBookISBNQuery.setString(1, newValue);
-                                                updatePublicationTitleQuery.setInt(2, publicationID);
-                                                updatePublicationTitleQuery.executeUpdate();
-                                                break;
-
-                                        case "2":
-                                                updateBookEditionQuery.setString(1, newValue);
-                                                updateBookEditionQuery.setInt(2, publicationID);
+                                                System.out.println("Enter new book edition");
+                                                value = scanner.next();
+                                                updateBookEditionQuery.setString(1, value);
+                                                System.out.println("Enter publication ID of the book");
+                                                pid = scanner.nextInt();
+                                                updateBookEditionQuery.setInt(2, pid);
                                                 updateBookEditionQuery.executeUpdate();
                                                 break;
 
+                                        case "2":
+                                                System.out.println("Enter the ISBN value");
+                                                value = scanner.next();
+                                                updateBookISBNQuery.setInt(1, Integer.parseInt(value));
+                                                System.out.println("Enter publication ID of the book");
+                                                pid = scanner.nextInt();
+                                                updateBookISBNQuery.setInt(2, pid);
+                                                updateBookISBNQuery.executeUpdate();
+                                                break;
+
                                         case "3":
-                                                updateBookPublicationDateQuery.setString(1, newValue);
-                                                updateBookPublicationDateQuery.setInt(2, publicationID);
+                                                System.out.println("Enter the new publication date");
+                                                value = scanner.next();
+                                                updateBookPublicationDateQuery.setString(1, value);
+                                                System.out.println("Enter publication ID of the book");
+                                                pid = scanner.nextInt();
+                                                updateBookPublicationDateQuery.setInt(2, pid);
                                                 updateBookPublicationDateQuery.executeUpdate();
+                                                break;
+                                        case "4":
+                                                System.out.println("Enter new text");
+                                                value = scanner.next();
+                                                updateChapterTextQuery.setString(1, value);
+                                                System.out.println("Enter publication ID of the book");
+                                                pid = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updateChapterTextQuery.setInt(2, pid);
+                                                System.out.println("Enter the title of the chapter");
+                                                title = scanner.next();
+                                                updateChapterTextQuery.setString(3, title);
+                                                updateChapterTextQuery.executeUpdate();
+                                                break;
+                                        case "5":
+                                                System.out.println("Enter new title");
+                                                value = scanner.next();
+                                                updateChapterTitleQuery.setString(1, value);
+                                                System.out.println("Enter publication ID of the book");
+                                                pid = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updateChapterTitleQuery.setInt(2, pid);
+                                                System.out.println("Enter the current title of the book");
+                                                title = scanner.nextLine();
+                                                updateChapterTitleQuery.setString(3, title);
+                                                updateChapterTitleQuery.executeUpdate();
                                                 break;
 
                                         default:
@@ -651,6 +717,8 @@ public class WolfPubDB {
                         e.printStackTrace();
                 }
         }
+
+
 
         public static void insertPeriodical(int publicationID, String issueDate, String periodicity) {
                 try {
@@ -672,6 +740,7 @@ public class WolfPubDB {
                 }
 
         }
+
 
         public static void updatePeriodical(int publicationID, String option, String newValue) {
                 try {
@@ -1345,20 +1414,20 @@ public class WolfPubDB {
                         System.out.println("\nPublications Menu\n");
                         System.out.println("---------------BOOKS---------------");
                         System.out.println("1.  Add a new book edition");
-                        System.out.println("2.  Update book edition");
+                        System.out.println("2.  Update book/chapter details");
                         System.out.println("3.  Delete book edition ");
                         System.out.println("4.  Add a chapter to a Book");
                         System.out.println("5.  Update a chapter of a Book");
-                        System.out.println("6.  Find books");
-                        System.out.println("7.  Show all Books");
-                        System.out.println("8.  Show all chapters for a Book");
+                        System.out.println("6.  Update the title of a chapter");
+                        System.out.println("7.  Find books");
+                        System.out.println("8.  Show all Books");
+                        System.out.println("9.  Show all chapters for a Book");
                         System.out.println("---------------PERIODICALS---------------");
-                        System.out.println("9.  Add new Periodical");
-                        System.out.println("10. Update Periodical");
+                        System.out.println("10.  Add new Periodical");
                         System.out.println("11. Delete Periodical");
                         System.out.println("12. Add an article to a Periodical");
-                        System.out.println("13. Update an article of a Periodical");
-                        System.out.println("15. Update text of article");
+                        System.out.println("13. Update the article title of a Periodical");
+                        System.out.println("15. Update text of an article");
                         System.out.println("16. Find articles");
                         System.out.println("17. Show all periodicals");
                         System.out.println("18. Show all articles for a periodical");
@@ -1373,7 +1442,7 @@ public class WolfPubDB {
                                         getNewBookInputs();
                                         break;
                                 case "2":
-                                        displayUpdateBookMenu();
+                                        updateBookMenu();
                                         break;
                                 case "3":
                                         getDeleteBookInputs();
@@ -1429,6 +1498,238 @@ public class WolfPubDB {
 
         }
 
+        public static void updateDistributorInputs(){
+                clearConsoleScreen();
+                int account_number;
+                String value;
+                System.out.println("1.  Update distributor account number");
+                System.out.println("2.  Update distributor phone");
+                System.out.println("3.  update distributor city");
+                System.out.println("4.  update distributor street address");
+                System.out.println("5.  update distributor type");
+                System.out.println("6.  update distributor name");
+                System.out.println("7.  update distributor balance");
+                System.out.println("8.  update distributor contact person");
+                System.out.println("9.  Return to menu");
+                System.out.println("10.  Exit");
+
+                String response = scanner.nextLine();
+                switch (response) {
+                        case "1":
+                                System.out.println("Enter account number that needs to be updated.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter new account number");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "1");
+                                break;
+                        case "2":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor phone number");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "2");
+                                break;
+                        case "3":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor city");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "3");
+                                break;
+                        case "4":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor street address");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "4");
+                                break;
+                        case "5":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor type");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "5");
+                                break;
+                        case "6":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor name");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "6");
+                                break;
+                        case "7":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor balance");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "7");
+                                break;
+                        case "8":
+                                System.out.println("Enter distributor account number");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor contact person");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "8");
+                                break;
+
+                        case "9":
+                                return;
+                        case "10":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Please enter correct choice from above.");
+                                break;
+
+                }
+
+
+        }
+
+        public static void addDistributorInputs(){
+                int account_number;
+                String phone;
+                String city;
+                String street_address;
+                String type;
+                String name;
+                double balance;
+                String contact_person;
+                System.out.println("Enter distributor account number");
+                account_number = scanner.nextInt();
+                System.out.println("Enter distributor phone");
+                phone = scanner.next();
+                System.out.println("Enter distributor city");
+                city = scanner.next();
+                System.out.println("Enter distributor street address");
+                street_address = scanner.next();
+                System.out.println("Enter distributor type");
+                type = scanner.next();
+                System.out.println("Enter distributor name");
+                name = scanner.next();
+                System.out.println("Enter distributor balance");
+                balance = scanner.nextDouble();
+                System.out.println("Enter distributor contact person");
+                contact_person = scanner.next();
+                insertDistributor(account_number, phone, city, street_address, type, name, balance, contact_person);
+        }
+
+        public static void insertDistributorPayment(int account_number, String payment_date, int amount_paid){
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                insertDistributorPaymentQuery.setInt(1, account_number);
+                                insertDistributorPaymentQuery.setString(2, payment_date);
+                                insertDistributorPaymentQuery.setInt(3, amount_paid);
+                                insertDistributorPaymentQuery.executeUpdate();
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+
+
+        }
+
+        public static void deleteDistributorInputs(){
+                System.out.println("Enter distributor account number");
+                int value = scanner.nextInt();
+                deleteDistributor(value);
+        }
+
+        public static void placeOrder(int order_number, int pid, int account_number, String order_date, String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost){
+                insertOrder(order_number, pid,account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+        }
+
+        public static void placeOrderInputs(){
+                int oid = 0;
+                try{
+                        result = getOrderID.executeQuery();
+                        result.beforeFirst();
+                        System.out.println(result);
+                        while(result.next()){
+                        oid = result.getInt("order_number");
+                }
+                }catch(Exception e){
+                        System.out.println("exception");
+                }
+
+                System.out.println(oid);
+                System.out.println("Enter publication ID for the order");
+                int pid = scanner.nextInt();
+                System.out.println("Enter distributor account number");
+                int account_number = scanner.nextInt();
+                System.out.println("Enter order date in the format YYYY-MM-DD");
+                String order_date = scanner.next();
+                System.out.println("Enter order delivery date in the format YYYY-MM-DD");
+                String order_delivery_date = scanner.next();
+                System.out.println("Enter number of copies");
+                int number_of_copies = scanner.nextInt();
+                System.out.println("Enter total cost");
+                double total_cost = scanner.nextDouble();
+                System.out.println("Enter shipping cost");
+                double shipping_cost = scanner.nextDouble();
+                placeOrder(oid+1, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+
+        }
+
+        public static void generateBill(){
+                System.out.println("Enter order number");
+                int order_number = scanner.nextInt();
+                try{
+                        generateBillQuery.setInt(1,order_number);
+                        generateBillQuery.executeUpdate();
+                }catch(SQLException e){
+                        System.out.println("update failed");
+                }
+
+        }
+
+        public static void deduceBalance(int account_number, String payment_date){
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+
+                                deduceBalanceQuery.setInt(1, account_number);
+                                deduceBalanceQuery.setString(2, payment_date);
+                                deduceBalanceQuery.executeUpdate();
+                                connection.commit();
+
+
+                                }catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+
+        public static void receivePayment(){
+                System.out.println("Enter account number of the distributor");
+                int account_number = scanner.nextInt();
+                System.out.println("Enter payment date in the format YYYY-DD-MM");
+                String payment_date = scanner.next();
+                System.out.println("Enter amount paid");
+                int amount_paid = scanner.nextInt();
+
+                insertDistributorPayment(account_number, payment_date, amount_paid);
+                deduceBalance(account_number, payment_date);
+
+
+
+        }
+
         public static void displayDistributorMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1439,7 +1740,7 @@ public class WolfPubDB {
                         System.out.println("3.  Delete a Distributor ");
                         System.out.println("4.  Place an order for a distributor");
                         System.out.println("5.  Generate Bill for distributor");
-                        System.out.println("6.  Recieve Payment of distributor");
+                        System.out.println("6.  Receive Payment of distributor");
                         System.out.println("---------------MENU ACTIONS---------------");
                         System.out.println("7. Go back to previous Menu");
                         System.out.println("8. Exit");
@@ -1448,12 +1749,22 @@ public class WolfPubDB {
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
+                                        addDistributorInputs();
                                         break;
                                 case "2":
+                                        updateDistributorInputs();
                                         break;
                                 case "3":
+                                        deleteDistributorInputs();
                                         break;
                                 case "4":
+                                        placeOrderInputs();
+                                        break;
+                                case "5":
+                                        generateBill();
+                                        break;
+                                case "6":
+                                        receivePayment();
                                         break;
                                 case "7":
                                         return;
@@ -1536,7 +1847,7 @@ public class WolfPubDB {
                         System.out.println("6.  Find Editor");
                         System.out.println("7.  Show all Editors");
                         System.out.println("---------------Authors---------------");
-                        System.out.println("8.  Add a new Autor");
+                        System.out.println("8.  Add a new Author");
                         System.out.println("9.  Update an Author");
                         System.out.println("10.  Delete an author");
                         System.out.println("11. Add an author to a Book");
@@ -1587,9 +1898,11 @@ public class WolfPubDB {
                         System.out.println("1.Show Publications Menu");
                         System.out.println("2.Show Staff Menu");
                         System.out.println("3.Show Distributors Menu");
-                        System.out.println("4.Show Reports Menu");
-                        System.out.println("5.Go back to previous Menu");
-                        System.out.println("6.Exit");
+                        System.out.println("4.Show Orders Menu");
+                        System.out.println("6.Show Distributor Payments Menu");
+                        System.out.println("7.Show Reports Menu");
+                        System.out.println("8.Go back to previous Menu");
+                        System.out.println("9.Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2376,7 +2689,7 @@ public class WolfPubDB {
 
         private static void connectToDatabase() throws ClassNotFoundException, SQLException {
                 Class.forName("org.mariadb.jdbc.Driver");
-
+                //generateDDLAndDMLStatements();
                 // String user = "kvankad";
                 // String password = "Builder!12";
                 String user = "sthota";
