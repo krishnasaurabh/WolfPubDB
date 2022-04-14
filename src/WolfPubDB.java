@@ -339,11 +339,11 @@ public class WolfPubDB {
                         query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
                         currentTotalDistributorsReportQuery = connection.prepareStatement(query);
 
-                        query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
-                                        "FROM" +
-                                        "Distributors D NATURAL JOIN DistributorPayments DP" +
-                                        "GROUP BY city;";
-                        totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+                    query = "SELECT city AS distributor_city, sum(amount_paid) as revenue " +
+                            "FROM "+
+                            "Distributors D NATURAL JOIN DistributorPayments DP "+
+                            "GROUP BY city;";
+                    totalRevenuePerCityReportQuery = connection.prepareStatement(query);
 
                         query = "  SELECT   " +
                                         "  account_number AS distributor_account_no,   " +
@@ -445,7 +445,6 @@ public class WolfPubDB {
                         e.printStackTrace();
                 }
         }
-
         public static void deletePayment(int staff_ID, String salary_date) {
                 try {
                         connection.setAutoCommit(false);
@@ -1166,24 +1165,6 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
-        public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
-                try {
-                        connection.setAutoCommit(false);
-                        try {
-                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
-                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
-                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
-                                totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
-                        } catch (SQLException e) {
-                                connection.rollback();
-                                e.printStackTrace();
-                        } finally {
-                                connection.setAutoCommit(true);
-                        }
-                } catch (SQLException e) {
-                        e.printStackTrace();
-                }
-        }
 
         public static void displayAllAuthors() {
                 try {
@@ -1810,7 +1791,6 @@ public class WolfPubDB {
                         err.printStackTrace();
                 }
         }
-
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1901,15 +1881,142 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayReports(String input) {
+                try {
+                        switch (input) {
+                                case "1":
+                                        result = copiesPerDistributorPerMonthlyReportQuery.executeQuery();
+                                        break;
+                                case "2":
+                                        result = monthlyTotalRevenueReportQuery.executeQuery();
+                                        break;
+                                case "3":
+                                        result = monthlyTotalExpenseReportQuery.executeQuery();
+                                        break;
+                                case "4":
+                                        result = currentTotalDistributorsReportQuery.executeQuery();
+                                        break;
+                                case "5":
+                                        result = totalRevenuePerCityReportQuery.executeQuery();
+                                        break;
+                                case "6":
+                                        result = totalRevenuePerDistibutorReportQuery.executeQuery();
+                                        break;
+                                case "7":
+                                        result = totalRevenuePerLocationReportQuery.executeQuery();
+                                        break;
+                                case "8":
+                                        System.out.print("\nEnter Start Date: ");
+                                        String startDate = scanner.nextLine();
+                                        System.out.print("\nEnter End Date: ");
+                                        String endDate = scanner.nextLine();
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                                        result = totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.executeQuery();
+                                        break;
+                                case "9":
+                                        return;
+                                case "10":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+
+                        if (result != null) {
+                                if (!result.next()) {
+                                        System.out.println("No Reports exist");
+                                        return;
+                                }
+                                result.beforeFirst();
+                                display_table(result);
+                                System.out.println();
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Failure");
+                }
+        }
+
+        public static void displayTableContent(String input) {
+                try {
+                        switch (input) {
+                                case "publications":
+                                        result = showPublications.executeQuery();
+                                        break;
+                                case "staff":
+                                        result = showStaff.executeQuery();
+                                        break;
+                                case "books":
+                                        result = showBooks.executeQuery();
+                                        break;
+                                case "orders":
+                                        result = showOrders.executeQuery();
+                                        break;
+                                case "edits":
+                                        result = showEdits.executeQuery();
+                                        break;
+                                case "payments":
+                                        result = showPayments.executeQuery();
+                                        break;
+                                case "distributors":
+                                        result = showDistributors.executeQuery();
+                                        break;
+                                case "distributor-payments":
+                                        result = showDistributorPayments.executeQuery();
+                                        break;
+                                case "authors":
+                                        result = showAuthors.executeQuery();
+                                        break;
+                                case "editors":
+                                        result = showEditors.executeQuery();
+                                        break;
+                                case "periodicals":
+                                        result = showPeriodicals.executeQuery();
+                                        break;
+                                case "chapters":
+                                        result = showChapters.executeQuery();
+                                        break;
+                                case "articles":
+                                        result = showArticles.executeQuery();
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+
+                        if (result != null) {
+                                if (!result.next()) {
+                                        System.out.println("No Reports exist");
+                                        return;
+                                }
+                                result.beforeFirst();
+                                display_table(result);
+                                System.out.println();
+                        } else {
+                                System.out.println("No Reports Exist");
+                        }
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Failure");
+                }
+        }
+
+
+
         public static void displayReportsMenu() {
                 while (true) {
                         clearConsoleScreen();
-                        System.out.println("\nDistributor Management Menu\n");
+                        System.out.println("\nReports Menu\n");
                         System.out.println("---------------Monthly Reports---------------");
                         System.out.println(
                                         "1.  Number and total price of copies of each publication bought per distributor");
                         System.out.println("2.  Total revenue of the publishing house");
                         System.out.println("3.  Total expenses ");
+                        System.out.println("---------------Other Reports---------------");
                         System.out.println("4.  Total current number of distributors");
                         System.out.println("5.  Total revenue (since inception) per city");
                         System.out.println("6.  Total revenue (since inception) per distributor");
@@ -1921,23 +2028,9 @@ public class WolfPubDB {
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
-                        switch (response) {
-                                case "1":
-                                        break;
-                                case "2":
-                                        break;
-                                case "3":
-                                        break;
-                                case "4":
-                                        break;
-                                case "9":
-                                        return;
-                                case "10":
-                                        System.exit(0);
-                                        break;
-                                default:
-                                        System.out.println("Please enter correct choice from above.");
-                                        break;
+                        displayReports(response);
+                        if (response.equals("9")) {
+                                return;
                         }
                 }
         }
