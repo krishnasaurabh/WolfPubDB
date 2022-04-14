@@ -1097,24 +1097,25 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
-        public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
-                try {
-                        connection.setAutoCommit(false);
-                try {
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
-                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
-                } catch (SQLException e) {
-                        connection.rollback();
-                        e.printStackTrace();
-                } finally {
-                        connection.setAutoCommit(true);
-                }
-                } catch (SQLException e) {
-                e.printStackTrace();
-                }
-        }
+        // public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
+        //         try {
+        //                 connection.setAutoCommit(false);
+        //         try {
+        //                 totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+        //                 totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+        //                 totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+        //                 totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+        //                 totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.executeQuery();
+        //         } catch (SQLException e) {
+        //                 connection.rollback();
+        //                 e.printStackTrace();
+        //         } finally {
+        //                 connection.setAutoCommit(true);
+        //         }
+        //         } catch (SQLException e) {
+        //         e.printStackTrace();
+        //         }
+        // }
 
 
         public static void displayPublicationsMenu() {
@@ -1207,6 +1208,64 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayReports(String input) {
+                try {
+                        switch (input) {
+                                case "1":
+                                        result = copiesPerDistributorPerMonthlyReportQuery.executeQuery();
+                                        break;
+                                case "2":
+                                        result = monthlyTotalRevenueReportQuery.executeQuery();
+                                        break;
+                                case "3":
+                                        result = monthlyTotalExpenseReportQuery.executeQuery();
+                                        break;
+                                case "4":
+                                        result = currentTotalDistributorsReportQuery.executeQuery();
+                                        break;
+                                case "5":
+                                        result = totalRevenuePerCityReportQuery.executeQuery();
+                                        break;
+                                case "6":
+                                        result = totalRevenuePerDistibutorReportQuery.executeQuery();
+                                        break;
+                                case "7":
+                                        result = totalRevenuePerLocationReportQuery.executeQuery();
+                                        break;
+                                case "8":
+                                        System.out.print("\nEnter Start Date: ");
+                                        String startDate = scanner.nextLine();
+                                        System.out.print("\nEnter End Date: ");
+                                        String endDate = scanner.nextLine();
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.executeQuery();
+                                        result = totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.executeQuery();
+                                        break;
+                                case "9":
+                                        return;
+                                case "10":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                        
+                        if (!result.next()) {
+                                System.out.println("No Reports exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
         public static void displayReportsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1227,24 +1286,7 @@ public class WolfPubDB {
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
-                        switch (response) {
-                                case "1":
-                                        break;
-                                case "2":
-                                        break;
-                                case "3":
-                                        break;
-                                case "4":
-                                        break;
-                                case "9":
-                                        return;
-                                case "10":
-                                        System.exit(0);
-                                        break;
-                                default:
-                                        System.out.println("Please enter correct choice from above.");
-                                        break;
-                        }
+                        displayReports(response);
                 }
         }
 
