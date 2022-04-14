@@ -7,8 +7,11 @@ import java.sql.Statement;
 import java.sql.PreparedStatement;
 import java.util.Scanner;
 
+import javax.naming.spi.DirStateFactory.Result;
+import javax.sound.midi.SysexMessage;
+
 public class WolfPubDB {
-        static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
+    static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
 
         private static Connection connection = null;
         private static Statement statement = null;
@@ -63,6 +66,8 @@ public class WolfPubDB {
         private static PreparedStatement updateDistributorBalanceQuery;
         private static PreparedStatement updateDistributorContactPersonQuery;
         private static PreparedStatement deleteDistributorQuery;
+        private static PreparedStatement generateBillQuery;
+        private static PreparedStatement deduceBalanceQuery;
 
         private static PreparedStatement insertOrderQuery;
         private static PreparedStatement updateOrderDateQuery;
@@ -71,11 +76,41 @@ public class WolfPubDB {
         private static PreparedStatement updateOrderTotalCostQuery;
         private static PreparedStatement updateOrderShippingCostQuery;
         private static PreparedStatement deleteOrderQuery;
+        private static PreparedStatement getOrderID;
 
         private static PreparedStatement insertPaymentQuery;
         private static PreparedStatement updatePaymentAmountQuery;
         private static PreparedStatement updatePaymentCollectionDateQuery;
         private static PreparedStatement deletePaymentQuery;
+
+        // reports
+
+        private static PreparedStatement copiesPerDistributorPerMonthlyReportQuery;
+        private static PreparedStatement monthlyTotalRevenueReportQuery;
+        private static PreparedStatement monthlyTotalExpenseReportQuery;
+        private static PreparedStatement currentTotalDistributorsReportQuery;
+        private static PreparedStatement totalRevenuePerCityReportQuery;
+        private static PreparedStatement totalRevenuePerDistibutorReportQuery;
+        private static PreparedStatement totalRevenuePerLocationReportQuery;
+        private static PreparedStatement totalStaffPaymentsPerPeriodPerWorkTypeReportQuery;
+
+        // select statements
+
+        private static PreparedStatement showPublications;
+        private static PreparedStatement showStaff;
+        private static PreparedStatement showBooks;
+        private static PreparedStatement showOrders;
+        private static PreparedStatement showEdits;
+        private static PreparedStatement showPayments;
+        private static PreparedStatement showDistributors;
+        private static PreparedStatement showDistributorPayments;
+        private static PreparedStatement showEditors;
+        private static PreparedStatement showAuthors;
+        private static PreparedStatement showPeriodicals;
+        private static PreparedStatement showChapters;
+        private static PreparedStatement showArticles;
+        private static PreparedStatement showWritesBooks;
+        private static PreparedStatement showWritesArticles;
 
         public static void generateDDLAndDMLStatements(Connection connection) {
                 String query;
@@ -147,7 +182,7 @@ public class WolfPubDB {
                         query = "DELETE FROM `Articles`" + " WHERE `publication_ID` = ? and `title`= ?;";
                         deleteArticleQuery = connection.prepareStatement(query);
 
-                        query = "INSERT INTO `Distributors` (`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                        query = "INSERT INTO Distributors(`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertDistributorQuery = connection.prepareStatement(query);
                         query = "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
                         updateDistributorAccountNumberQuery = connection.prepareStatement(query);
@@ -166,6 +201,11 @@ public class WolfPubDB {
                         query = "UPDATE `Distributors`" + " SET `contact_person` = ? WHERE account_number = ?;";
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
+                        deleteDistributorQuery = connection.prepareStatement(query);
+                        query = "UPDATE `Distributors` d JOIN `Orders` o ON o.distributor_account_no = d.account_number SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;"; 
+                        generateBillQuery = connection.prepareStatement(query);
+                        query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
+                        deduceBalanceQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
@@ -181,6 +221,8 @@ public class WolfPubDB {
                         updateOrderShippingCostQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Orders`" + " WHERE `order_number` = ?;";
                         deleteOrderQuery = connection.prepareStatement(query);
+                        query = "SELECT order_number FROM Orders";
+                        getOrderID = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
                         insertPaymentQuery = connection.prepareStatement(query);
@@ -192,8 +234,143 @@ public class WolfPubDB {
                                         + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                         updatePaymentCollectionDateQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";
-                        ;
+
                         deletePaymentQuery = connection.prepareStatement(query);
+
+                    // report queries
+
+                    query = "  SELECT   "+
+                            "  EXTRACT(YEAR FROM order_date) as year,   "+
+                            "  EXTRACT(MONTH FROM order_date) as month,distributor_account_no, publication_ID,   "+
+                            "  SUM(total_cost) AS order_value,   "+
+                            "  SUM(number_of_copies) AS total_copies  "+
+                            "  FROM Orders  "+
+                            "  GROUP BY EXTRACT(YEAR FROM order_date), EXTRACT(MONTH FROM order_date), distributor_account_no, publication_ID;  ";
+                    copiesPerDistributorPerMonthlyReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  EXTRACT(YEAR FROM payment_date) AS year,   "+
+                            "  EXTRACT(MONTH FROM payment_date) AS month,    "+
+                            "  SUM(amount_paid) AS revenue   "+
+                            "  FROM DistributorPayments  "+
+                            "  GROUP BY EXTRACT(YEAR FROM payment_date), EXTRACT(MONTH FROM payment_date); ";
+                    monthlyTotalRevenueReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT  "+
+                            "  year,   "+
+                            "  month,    "+
+                            "  SUM(expenses) AS expenses   "+
+                            "  FROM(  "+
+                            "  SELECT   "+
+                            "  EXTRACT(YEAR FROM salary_date) AS year,   "+
+                            "  EXTRACT(MONTH FROM salary_date) AS month,  "+
+                            "  SUM(payment_amount) AS expenses   "+
+                            "  FROM Payments  "+
+                            "  GROUP BY EXTRACT(YEAR FROM salary_date),   "+
+                            "  EXTRACT(MONTH FROM salary_date)  "+
+                            "  UNION  "+
+                            "  SELECT   "+
+                            "  EXTRACT(YEAR FROM order_delivery_date) AS year,  "+
+                            "  EXTRACT(MONTH FROM order_delivery_date) AS month,  "+
+                            "  SUM(shipping_cost) AS expenses   "+
+                            "  FROM Orders  "+
+                            "  GROUP BY EXTRACT(YEAR FROM order_delivery_date),  "+
+                            "  EXTRACT(MONTH FROM order_delivery_date)  "+
+                            "  ) AS Expenses  "+
+                            "  GROUP BY year, month;";
+                    monthlyTotalExpenseReportQuery = connection.prepareStatement(query);
+
+
+
+                    query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
+                    currentTotalDistributorsReportQuery = connection.prepareStatement(query);
+
+                    query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
+                            "FROM"+
+                            "Distributors D NATURAL JOIN DistributorPayments DP"+
+                            "GROUP BY city;";
+                    totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  account_number AS distributor_account_no,   "+
+                            "  sum(amount_paid) as revenue  "+
+                            "  FROM DistributorPayments  "+
+                            "  GROUP BY account_number;";
+                    totalRevenuePerDistibutorReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  city,   "+
+                            "  street_address,   "+
+                            "  sum(amount_paid) as revenue  "+
+                            "  FROM Distributors D NATURAL JOIN DistributorPayments DP  "+
+                            "  GROUP BY city, street_address;  ";
+                    totalRevenuePerLocationReportQuery = connection.prepareStatement(query);
+
+                    query = "  SELECT   "+
+                            "  S.role AS staff_role,   "+
+                            "  A.type AS staff_type,   "+
+                            "  SUM(payment_amount) AS total_payments  "+
+                            "  FROM Staff S NATURAL JOIN Authors A   "+
+                            "  NATURAL JOIN Payments SP   "+
+                            "  WHERE salary_date >= ? AND   "+
+                            "  salary_date <= ? "+
+                            "  GROUP BY S.role , A.type  "+
+                            "  UNION  "+
+                            "  SELECT   "+
+                            "  S.role AS staff_role,   "+
+                            "  E.type AS staff_type,   "+
+                            "  SUM(payment_amount) AS total_payments  "+
+                            "  FROM Staff S NATURAL JOIN Editors E   "+
+                            "  NATURAL JOIN Payments SP   "+
+                            "  WHERE salary_date >= ? AND   "+
+                            "  salary_date <= ?  "+
+                            "  GROUP BY S.role , E.type;  ";
+                    totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Publications;";
+                    showPublications = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Staff;";
+                    showStaff = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Books;";
+                    showBooks = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Orders;";
+                    showOrders = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Edits;";
+                    showEdits = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Payments;";
+                    showPayments = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Distributors;";
+                    showDistributors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM DistributorPayments;";
+                    showDistributorPayments = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Editors;";
+                    showEditors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Authors;";
+                    showAuthors = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Periodicals;";
+                    showPeriodicals = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Chapters;";
+                    showChapters = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM Articles;";
+                    showArticles = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM WritesBook;";
+                    showWritesBooks = connection.prepareStatement(query);
+
+                    query = "SELECT * FROM WritesArticles;";
+                    showWritesArticles = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
                         e.printStackTrace();
@@ -244,8 +421,7 @@ public class WolfPubDB {
                         try {
                                 switch (option) {
                                         case "1":
-                                                updateDistributorAccountNumberQuery.setInt(1,
-                                                                Integer.parseInt(newValue));
+                                                updateDistributorAccountNumberQuery.setInt(1,Integer.parseInt(newValue));
                                                 updateDistributorAccountNumberQuery.setInt(2, account_number);
                                                 updateDistributorAccountNumberQuery.executeUpdate();
                                                 break;
@@ -262,27 +438,27 @@ public class WolfPubDB {
                                                 updateDistributorCityQuery.executeUpdate();
                                                 break;
 
-                                        case "5":
+                                        case "4":
                                                 updateDistributorStreetAddressQuery.setString(1, newValue);
                                                 updateDistributorStreetAddressQuery.setInt(2, account_number);
                                                 updateDistributorStreetAddressQuery.executeUpdate();
                                                 break;
-                                        case "6":
+                                        case "5":
                                                 updateDistributorTypeQuery.setString(1, newValue);
                                                 updateDistributorTypeQuery.setInt(2, account_number);
                                                 updateDistributorTypeQuery.executeUpdate();
                                                 break;
-                                        case "8":
+                                        case "6":
                                                 updateDistributorNameQuery.setString(1, newValue);
                                                 updateDistributorNameQuery.setInt(2, account_number);
                                                 updateDistributorNameQuery.executeUpdate();
                                                 break;
-                                        case "9":
+                                        case "7":
                                                 updateDistributorBalanceQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateDistributorBalanceQuery.setInt(2, account_number);
                                                 updateDistributorBalanceQuery.executeUpdate();
                                                 break;
-                                        case "10":
+                                        case "8":
                                                 updateDistributorContactPersonQuery.setString(1, newValue);
                                                 updateDistributorContactPersonQuery.setInt(2, account_number);
                                                 updateDistributorContactPersonQuery.executeUpdate();
@@ -354,7 +530,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "4":
-                                                updatePublicationPriceQuery.setDouble(1, Double.parseDouble(newValue));
+                                                updatePublicationPriceQuery.setString(1, newValue);
                                                 updatePublicationPriceQuery.setInt(2, publicationID);
                                                 updatePublicationPriceQuery.executeUpdate();
                                                 break;
@@ -432,7 +608,7 @@ public class WolfPubDB {
                                                 break;
 
                                         case "2":
-                                                updateBookEditionQuery.setInt(1, Integer.parseInt(newValue));
+                                                updateBookEditionQuery.setString(1, newValue);
                                                 updateBookEditionQuery.setInt(2, publicationID);
                                                 updateBookEditionQuery.executeUpdate();
                                                 break;
@@ -481,6 +657,7 @@ public class WolfPubDB {
                 }
 
         }
+
 
         public static void updatePeriodical(int publicationID, String option, String newValue) {
                 try {
@@ -798,14 +975,17 @@ public class WolfPubDB {
                                                 updateOrderNumberOfCopiesQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateOrderNumberOfCopiesQuery.setInt(2, order_number);
                                                 updateOrderNumberOfCopiesQuery.executeUpdate();
+                                                break;
                                         case "4":
                                                 updateOrderTotalCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderTotalCostQuery.setInt(2, order_number);
                                                 updateOrderTotalCostQuery.executeUpdate();
+                                                break;
                                         case "5":
                                                 updateOrderShippingCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderShippingCostQuery.setInt(2, order_number);
                                                 updateOrderShippingCostQuery.executeUpdate();
+                                                break;
                                         default:
                                                 System.out.println("Cannot perform the update operation");
                                                 break;
@@ -918,6 +1098,26 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
+        public static void totalStaffPaymentsPerPeriodPerWorkTypeReport(String startDate, String endDate) {
+                try {
+                        connection.setAutoCommit(false);
+                try {
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(1, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(2, endDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(3, startDate);
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery.setString(4, endDate);
+                } catch (SQLException e) {
+                        connection.rollback();
+                        e.printStackTrace();
+                } finally {
+                        connection.setAutoCommit(true);
+                }
+                } catch (SQLException e) {
+                e.printStackTrace();
+                }
+        }
+
+
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -970,6 +1170,238 @@ public class WolfPubDB {
 
         }
 
+        public static void updateDistributorInputs(){
+                clearConsoleScreen();
+                int account_number;
+                String value;
+                System.out.println("1.  Update distributor account number");
+                System.out.println("2.  Update distributor phone");
+                System.out.println("3.  update distributor city");
+                System.out.println("4.  update distributor street address");
+                System.out.println("5.  update distributor type");
+                System.out.println("6.  update distributor name");
+                System.out.println("7.  update distributor balance");
+                System.out.println("8.  update distributor contact person");
+                System.out.println("9.  Return to menu");
+                System.out.println("10.  Exit");
+
+                String response = scanner.nextLine();
+                switch (response) {
+                        case "1":
+                                System.out.println("Enter account number that needs to be updated.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter new account number");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "1");
+                                break;
+                        case "2":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor phone number");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "2");
+                                break;
+                        case "3":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor city");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "3");
+                                break;
+                        case "4":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor street address");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "4");
+                                break;
+                        case "5":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor type");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "5");
+                                break;
+                        case "6":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor name");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "6");
+                                break;
+                        case "7":
+                                System.out.println("Enter distributor account number.");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor balance");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "7");
+                                break;
+                        case "8":
+                                System.out.println("Enter distributor account number");
+                                account_number = scanner.nextInt();
+                                System.out.println("Enter distributor contact person");
+                                value = scanner.next();
+                                updateDistributor(account_number, value, "8");
+                                break;
+
+                        case "9":
+                                return;
+                        case "10":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Please enter correct choice from above.");
+                                break;
+                        
+                }
+
+
+        }
+
+        public static void addDistributorInputs(){
+                int account_number;
+                String phone;
+                String city;
+                String street_address;
+                String type;
+                String name;
+                double balance;
+                String contact_person;
+                System.out.println("Enter distributor account number");
+                account_number = scanner.nextInt();
+                System.out.println("Enter distributor phone");
+                phone = scanner.next();
+                System.out.println("Enter distributor city");
+                city = scanner.next();
+                System.out.println("Enter distributor street address");
+                street_address = scanner.next();
+                System.out.println("Enter distributor type");
+                type = scanner.next();
+                System.out.println("Enter distributor name");
+                name = scanner.next();
+                System.out.println("Enter distributor balance");
+                balance = scanner.nextDouble();
+                System.out.println("Enter distributor contact person");
+                contact_person = scanner.next();
+                insertDistributor(account_number, phone, city, street_address, type, name, balance, contact_person);
+        }
+
+        public static void insertDistributorPayment(int account_number, String payment_date, int amount_paid){
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                insertDistributorPaymentQuery.setInt(1, account_number);
+                                insertDistributorPaymentQuery.setString(2, payment_date);
+                                insertDistributorPaymentQuery.setInt(3, amount_paid);
+                                insertDistributorPaymentQuery.executeUpdate();
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+                
+
+        }
+
+        public static void deleteDistributorInputs(){
+                System.out.println("Enter distributor account number");
+                int value = scanner.nextInt();
+                deleteDistributor(value);
+        }
+
+        public static void placeOrder(int order_number, int pid, int account_number, String order_date, String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost){
+                insertOrder(order_number, pid,account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+        }
+
+        public static void placeOrderInputs(){
+                int oid = 0;
+                try{
+                        result = getOrderID.executeQuery();
+                        result.beforeFirst();
+                        System.out.println(result);
+                        while(result.next()){
+                        oid = result.getInt("order_number");
+                }
+                }catch(Exception e){
+                        System.out.println("exception");
+                }       
+
+                System.out.println(oid);
+                System.out.println("Enter publication ID for the order");
+                int pid = scanner.nextInt();
+                System.out.println("Enter distributor account number");
+                int account_number = scanner.nextInt();
+                System.out.println("Enter order date in the format YYYY-MM-DD");
+                String order_date = scanner.next();
+                System.out.println("Enter order delivery date in the format YYYY-MM-DD");
+                String order_delivery_date = scanner.next();
+                System.out.println("Enter number of copies");
+                int number_of_copies = scanner.nextInt();
+                System.out.println("Enter total cost");
+                double total_cost = scanner.nextDouble();
+                System.out.println("Enter shipping cost");
+                double shipping_cost = scanner.nextDouble();
+                placeOrder(oid+1, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+
+        }
+
+        public static void generateBill(){
+                System.out.println("Enter order number");
+                int order_number = scanner.nextInt();
+                try{
+                        generateBillQuery.setInt(1,order_number);
+                        generateBillQuery.executeUpdate();
+                }catch(SQLException e){
+                        System.out.println("update failed");
+                }
+
+        }
+
+        public static void deduceBalance(int account_number, String payment_date){
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                
+                                deduceBalanceQuery.setInt(1, account_number);
+                                deduceBalanceQuery.setString(2, payment_date);
+                                deduceBalanceQuery.executeUpdate();
+                                connection.commit();
+                                       
+
+                                }catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+
+        public static void receivePayment(){
+                System.out.println("Enter account number of the distributor");
+                int account_number = scanner.nextInt();
+                System.out.println("Enter payment date in the format YYYY-DD-MM");
+                String payment_date = scanner.next();
+                System.out.println("Enter amount paid");
+                int amount_paid = scanner.nextInt();
+        
+                insertDistributorPayment(account_number, payment_date, amount_paid);
+                deduceBalance(account_number, payment_date);
+                        
+                       
+
+        }
+        
         public static void displayDistributorMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -989,13 +1421,22 @@ public class WolfPubDB {
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
+                                        addDistributorInputs();
                                         break;
                                 case "2":
+                                        updateDistributorInputs();
                                         break;
                                 case "3":
+                                        deleteDistributorInputs();
                                         break;
                                 case "4":
+                                        placeOrderInputs();
                                         break;
+                                case "5":
+                                        generateBill();
+                                        return;
+                                case "6":
+                                        receivePayment();
                                 case "7":
                                         return;
                                 case "8":
@@ -1019,7 +1460,7 @@ public class WolfPubDB {
                         System.out.println("4.  Total current number of distributors");
                         System.out.println("5.  Total revenue (since inception) per city");
                         System.out.println("6.  Total revenue (since inception) per distributor");
-                        System.out.println("7.  Total revenue (since inception) per location");     
+                        System.out.println("7.  Total revenue (since inception) per location");
                         System.out.println("8.  Total payments to the editors and authors");
                         System.out.println("---------------MENU ACTIONS---------------");
                         System.out.println("9. Go back to previous Menu");
@@ -1061,7 +1502,7 @@ public class WolfPubDB {
                         System.out.println("5.  Remove Editor as a publication editor");
                         System.out.println("6.  Find Editor");
                         System.out.println("---------------Authors---------------");
-                        System.out.println("7.  Add a new Autor");
+                        System.out.println("7.  Add a new Author");
                         System.out.println("8.  Update an Author");
                         System.out.println("9.  Delete an author");
                         System.out.println("10. Add an author to a Book");
@@ -1838,13 +2279,14 @@ public class WolfPubDB {
 
         private static void connectToDatabase() throws ClassNotFoundException, SQLException {
                 Class.forName("org.mariadb.jdbc.Driver");
-
+                //generateDDLAndDMLStatements();
                 // String user = "kvankad";
                 // String password = "Builder!12";
                 String user = "sthota";
                 String password = "200420891";
 
                 connection = DriverManager.getConnection(jdbcURL, user, password);
+                generateDDLAndDMLStatements(connection);
                 statement = connection.createStatement();
 
         }
