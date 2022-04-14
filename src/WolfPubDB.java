@@ -9,11 +9,12 @@ import java.util.Scanner;
 
 public class WolfPubDB {
         static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
-
         private static Connection connection = null;
         private static Statement statement = null;
+
         private static ResultSet result = null;
-        static Scanner scanner = null;
+
+        static Scanner scanner;
 
         private static PreparedStatement editorAssignmentQuery;
         private static PreparedStatement editorUnAssignmentQuery;
@@ -25,6 +26,7 @@ public class WolfPubDB {
         private static PreparedStatement updatePublicationPriceQuery;
         private static PreparedStatement deletePublicationQuery;
         private static PreparedStatement updateBookEditionISBNQuery;
+        private static PreparedStatement getLastPublicationID;
 
         private static PreparedStatement insertBookQuery;
         private static PreparedStatement updateBookISBNQuery;
@@ -32,6 +34,7 @@ public class WolfPubDB {
         private static PreparedStatement updateBookPublicationDateQuery;
         private static PreparedStatement deleteBookQuery;
         private static PreparedStatement deleteBookEditionQuery;
+        private static PreparedStatement displayAllBookQuery;
 
         private static PreparedStatement insertChapterQuery;
         private static PreparedStatement updateChapterTitleQuery;
@@ -78,7 +81,7 @@ public class WolfPubDB {
         private static PreparedStatement deletePaymentQuery;
 
         public static void generateDDLAndDMLStatements(Connection connection) {
-                String query;
+                String query = "";
                 try {
                         query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
                         insertPublicationQuery = connection.prepareStatement(query);
@@ -92,6 +95,8 @@ public class WolfPubDB {
                         updatePublicationTypeQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
                         deletePublicationQuery = connection.prepareStatement(query);
+                        query = "SELECT publication_ID from `Publications`;";
+                        getLastPublicationID = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
                         editorAssignmentQuery = connection.prepareStatement(query);
@@ -106,8 +111,10 @@ public class WolfPubDB {
                         updateBookEditionQuery = connection.prepareStatement(query);
                         query = "UPDATE `Books`" + " SET `publication_date` = ? WHERE `publication_ID`= ?;";
                         updateBookPublicationDateQuery = connection.prepareStatement(query);
-                        query = "DELETE FROM `Publications`" + " WHERE `publication_date` = ?;";
+                        query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
                         deleteBookQuery = connection.prepareStatement(query);
+                        query = "SELECT * from Books natural join Publications;";
+                        displayAllBookQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Chapters` (`publication_ID`, `title`, `text`) VALUES (?, ?, ?);";
                         insertChapterQuery = connection.prepareStatement(query);
@@ -428,7 +435,6 @@ public class WolfPubDB {
                                                 updateBookISBNQuery.setString(1, newValue);
                                                 updatePublicationTitleQuery.setInt(2, publicationID);
                                                 updatePublicationTitleQuery.executeUpdate();
-
                                                 break;
 
                                         case "2":
@@ -918,6 +924,95 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
+        public static void getNewBookInputs() {
+                try {
+                        int publicationID = generatePublicationID();
+                        System.out.println(publicationID);
+                        System.out.println("\n Enter the details of the Book");
+                        System.out.println("\n Book Title");
+                        String title = scanner.nextLine();
+                        System.out.println("\n Book Topic");
+                        String topic = scanner.nextLine();
+                        String type = "Book";
+                        System.out.println("\n Book Price ");
+                        Double price = scanner.nextDouble();
+                        scanner.nextLine();
+                        System.out.println("\n Book ISBN");
+                        int isbn = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.println("\n Book Edition");
+                        int edition = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.println("\n Book Publication Date in the format - YYYY-MM-DD ex:2022-03-02  ");
+                        String publicationDate = scanner.nextLine();
+                        insertPublication(publicationID, title, topic, type, price);
+                        insertBook(publicationID, isbn, edition, publicationDate);
+                } catch (Throwable err) {
+                        System.out.println("caught");
+                        err.printStackTrace();
+                }
+        }
+
+        public static void getDeleteBookInputs() {
+                try {
+                        displayAllBooks();
+                        System.out.println("\n Enter the Publication ID of the Book to be deleted:\n");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        deleteBook(publicationID);
+                        System.out.println("The Book is deleted successfully!");
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void displayAllBooks() {
+                System.out.println("Books in the Database : ");
+                try {
+                        result = displayAllBookQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Books exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        while (result.next()) {
+                                System.out.print(" Publication_ID: " + result.getInt("publication_ID") + " |");
+                                System.out.print("ISBN: " + result.getInt("ISBN") + " | ");
+                                System.out.print("edition: " + result.getInt("edition") + " | ");
+                                System.out.print("publication_date: " + result.getString("publication_date")
+                                                + " | ");
+                                System.out.print("title: " + result.getString("title") + " | ");
+                                System.out.print("topic: " + result.getString("topic") + " | ");
+                                System.out.print("type: " + result.getString("type") + " | ");
+                                System.out.print("price: " + result.getDouble("price") + " | \n");
+                        }
+
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+
+        }
+
+        public static void getNewChapterInputs() {
+                try {
+                        displayAllBooks();
+                        System.out.print("\n Enter the Publication ID of the Book to add a new chapter\n");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Enter the Title for the Chapter \n");
+                        String title = scanner.nextLine();
+
+                        System.out.print("\n Enter the  Text to be added to the Chapter \n");
+                        String text = scanner.nextLine();
+
+                        insertChapter(publicationID, title, text);
+
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -950,12 +1045,18 @@ public class WolfPubDB {
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
+                                        getNewBookInputs();
                                         break;
                                 case "2":
+                                        displayUpdateBookMenu();
                                         break;
                                 case "3":
+                                        getDeleteBookInputs();
                                         break;
                                 case "4":
+                                        getNewChapterInputs();
+                                        break;
+                                case "5":
                                         break;
                                 case "19":
                                         return;
@@ -1013,13 +1114,14 @@ public class WolfPubDB {
                         clearConsoleScreen();
                         System.out.println("\nDistributor Management Menu\n");
                         System.out.println("---------------Monthly Reports---------------");
-                        System.out.println("1.  Number and total price of copies of each publication bought per distributor");
+                        System.out.println(
+                                        "1.  Number and total price of copies of each publication bought per distributor");
                         System.out.println("2.  Total revenue of the publishing house");
                         System.out.println("3.  Total expenses ");
                         System.out.println("4.  Total current number of distributors");
                         System.out.println("5.  Total revenue (since inception) per city");
                         System.out.println("6.  Total revenue (since inception) per distributor");
-                        System.out.println("7.  Total revenue (since inception) per location");     
+                        System.out.println("7.  Total revenue (since inception) per location");
                         System.out.println("8.  Total payments to the editors and authors");
                         System.out.println("---------------MENU ACTIONS---------------");
                         System.out.println("9. Go back to previous Menu");
@@ -1047,7 +1149,6 @@ public class WolfPubDB {
                         }
                 }
         }
-
 
         public static void displayStaffMenu() {
                 while (true) {
@@ -1181,7 +1282,64 @@ public class WolfPubDB {
 
         }
 
+        public static int generatePublicationID() throws SQLException {
+                int publicationID = 0;
+
+                try {
+                        result = getLastPublicationID.executeQuery();
+                        result.beforeFirst();
+                        while (result.next()) {
+                                publicationID = result.getInt("publication_ID");
+                        }
+                        System.out.println(publicationID);
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+                return publicationID + 1;
+        }
+
+        public static void displayUpdateBookMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nBelow are the update operations you can perform.\n");
+                        System.out.println("1.Show Publications Menu");
+                        System.out.println("2.Show Staff Menu");
+                        System.out.println("3.Show Distributors Menu");
+                        System.out.println("4.Show Reports Menu");
+                        System.out.println("5.Go back to previous Menu");
+                        System.out.println("6.Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        displayPublicationsMenu();
+                                        break;
+                                case "2":
+                                        displayStaffMenu();
+                                        break;
+                                case "3":
+                                        displayDistributorMenu();
+                                        break;
+                                case "4":
+                                        displayReportsMenu();
+                                        break;
+                                case "5":
+                                        return;
+                                case "6":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+
+        }
+
         public static void displayMenu() throws SQLException {
+
                 while (true) {
                         System.out.println("\nEnter the user that you would like to use the system as.");
                         System.out.println(
@@ -1848,6 +2006,7 @@ public class WolfPubDB {
                 String password = "200420891";
 
                 connection = DriverManager.getConnection(jdbcURL, user, password);
+                generateDDLAndDMLStatements(connection);
                 statement = connection.createStatement();
 
         }
