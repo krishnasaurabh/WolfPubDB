@@ -89,6 +89,24 @@ public class WolfPubDB {
         private static PreparedStatement updatePaymentCollectionDateQuery;
         private static PreparedStatement deletePaymentQuery;
 
+        private static PreparedStatement addAuthorQuery;
+        private static PreparedStatement addStaffQuery;
+        private static PreparedStatement addEditorQuery;
+        private static PreparedStatement updateStaffQuery;
+        private static PreparedStatement deleteStaffQuery;
+
+        private static PreparedStatement addEditsQuery;
+        private static PreparedStatement deleteEditsQuery;
+
+        private static PreparedStatement addWritesArticlesQuery;
+        private static PreparedStatement deleteWritesArticlesQuery;
+
+        private static PreparedStatement addWritesBookQuery;
+        private static PreparedStatement deleteWritesBookQuery;
+
+        // private static PreparedStatement deletePaymentQuery;
+        // private static PreparedStatement deletePaymentQuery;
+
         // reports
 
         private static PreparedStatement copiesPerDistributorPerMonthlyReportQuery;
@@ -117,6 +135,11 @@ public class WolfPubDB {
         private static PreparedStatement showArticles;
         private static PreparedStatement showWritesBooks;
         private static PreparedStatement showWritesArticles;
+        private static PreparedStatement showAuthorByID;
+        private static PreparedStatement showEditorByID;
+        private static PreparedStatement findPublicationByEditorQuery;
+        private static PreparedStatement findBookByAuthorQuery;
+        private static PreparedStatement findArticleByAuthorQuery;
 
         public static void generateDDLAndDMLStatements() {
                 String query;
@@ -236,6 +259,39 @@ public class WolfPubDB {
 
                         deletePaymentQuery = connection.prepareStatement(query);
 
+                        query = "INSERT INTO Authors" + " VALUES (?,?);";
+                        addAuthorQuery = connection.prepareStatement(query);
+
+                        query = "INSERT INTO Editors (staff_ID, type) VALUES (?,?);";
+                        addEditorQuery = connection.prepareStatement(query);
+
+                        query = "INSERT INTO Staff VALUES (?,?,?,?,?,?,?,?);";
+                        addStaffQuery = connection.prepareStatement(query);
+
+                        query = "UPDATE Staff SET name = ?, phone_number = ?, Age  = ?, Gender = ?,  Email  = ?, Address = ? WHERE staff_ID = ? ;";
+                        updateStaffQuery = connection.prepareStatement(query);
+
+                        query = "Delete FROM Staff WHERE staff_ID = ? ;";
+                        deleteStaffQuery = connection.prepareStatement(query);
+
+                        query = "INSERT INTO Edits Values (?,?) ;";
+                        addEditsQuery = connection.prepareStatement(query);
+
+                        query = "DELETE FROM Edits WHERE staff_ID = ? AND publication_ID = ? ;";
+                        deleteEditsQuery = connection.prepareStatement(query);
+
+                        query = "INSERT INTO WritesArticles Values (?,?,?) ;";
+                        addWritesArticlesQuery = connection.prepareStatement(query);
+
+                        query = "DELETE FROM WritesArticles WHERE staff_ID = ? AND publication_ID = ?, title = ? ;";
+                        deleteWritesArticlesQuery = connection.prepareStatement(query);
+
+                        query = "INSERT INTO WritesBook Values (?,?) ;";
+                        addWritesBookQuery = connection.prepareStatement(query);
+
+                        query = "DELETE FROM WritesBook WHERE staff_ID = ? AND publication_ID = ? ;";
+                        deleteWritesBookQuery = connection.prepareStatement(query);
+
                         // report queries
 
                         query = "  SELECT   " +
@@ -349,10 +405,10 @@ public class WolfPubDB {
                         query = "SELECT * FROM DistributorPayments;";
                         showDistributorPayments = connection.prepareStatement(query);
 
-                        query = "SELECT * FROM Editors;";
+                        query = "SELECT * FROM Staff NATURAL JOIN Editors ;";
                         showEditors = connection.prepareStatement(query);
 
-                        query = "SELECT * FROM Authors;";
+                        query = "SELECT * FROM Staff NATURAL JOIN Authors;";
                         showAuthors = connection.prepareStatement(query);
 
                         query = "SELECT * FROM Periodicals;";
@@ -369,6 +425,21 @@ public class WolfPubDB {
 
                         query = "SELECT * FROM WritesArticles;";
                         showWritesArticles = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Staff NATURAL JOIN Authors WHERE staff_ID = ?;";
+                        showAuthorByID = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Staff NATURAL JOIN Editors WHERE staff_ID = ?;";
+                        showEditorByID = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Edits NATURAL JOIN Publications WHERE staff_ID = ?;";
+                        findPublicationByEditorQuery = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM WritesBook NATURAL JOIN Book WHERE staff_ID = ?;";
+                        findBookByAuthorQuery = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM WritesArticles NATURAL JOIN Articles WHERE staff_ID = ?;";
+                        findArticleByAuthorQuery = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
                         e.printStackTrace();
@@ -1040,7 +1111,6 @@ public class WolfPubDB {
                 } catch (SQLException e) {
                         e.printStackTrace();
                 }
-
         }
 
         public static void updatePayment(String option, String newValue, int staff_ID, String salary_date) {
@@ -1112,6 +1182,632 @@ public class WolfPubDB {
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
+                }
+        }
+
+        public static void displayAllAuthors() {
+                try {
+                        result = showAuthors.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+        }
+
+        public static void displayAllEditors() {
+                try {
+                        result = showEditors.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+        }
+
+        public static void displayAllStaff() {
+                try {
+                        result = showStaff.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+        }
+
+        public static void addAuthor_sql(int staff_ID, String type, String name, String role, String phone_number,
+                        int age, String gender, String email, String Address) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                addStaffQuery.setInt(1, staff_ID);
+                                addStaffQuery.setString(2, name);
+                                addStaffQuery.setString(3, role);
+                                addStaffQuery.setString(4, phone_number);
+                                addStaffQuery.setInt(5, age);
+                                addStaffQuery.setString(6, gender);
+                                addStaffQuery.setString(7, email);
+                                addStaffQuery.setString(8, Address);
+                                addStaffQuery.executeUpdate();
+
+                                addAuthorQuery.setInt(1, staff_ID);
+                                addAuthorQuery.setString(2, type);
+                                addAuthorQuery.executeUpdate();
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void addEditor_sql(int staff_ID, String type, String name, String role, String phone_number,
+                        int age, String gender, String email, String Address) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                addStaffQuery.setInt(1, staff_ID);
+                                addStaffQuery.setString(2, name);
+                                addStaffQuery.setString(3, role);
+                                addStaffQuery.setString(4, phone_number);
+                                addStaffQuery.setInt(5, age);
+                                addStaffQuery.setString(6, gender);
+                                addStaffQuery.setString(7, email);
+                                addStaffQuery.setString(8, Address);
+                                addStaffQuery.executeUpdate();
+
+                                addEditorQuery.setInt(1, staff_ID);
+                                addEditorQuery.setString(2, type);
+                                addEditorQuery.executeUpdate();
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void addAuthor() {
+                try {
+                        System.out.print("\n Enter the details of the Author\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Type of Author Staff/Invited \n");
+                        String type = scanner.nextLine();
+                        String role = "Author";
+                        System.out.print("\n name of Author \n");
+                        String name = scanner.nextLine();
+                        System.out.print("\n phone_number of Author \n");
+                        String phone_number = scanner.nextLine();
+                        System.out.print("\n age of Author \n");
+                        int age = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n gender of Author M/F \n");
+                        String gender = scanner.nextLine();
+                        System.out.print("\n email  of Author \n");
+                        String email = scanner.nextLine();
+                        System.out.print("\n Address  of Author \n");
+                        String Address = scanner.nextLine();
+                        addAuthor_sql(staff_ID, type, name, role, phone_number, age, gender, email, Address);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void addEdits_sql(int staff_ID, int publication_ID) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                addEditsQuery.setInt(1, staff_ID);
+                                addEditsQuery.setInt(2, publication_ID);
+                                addEditsQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void deleteEdits_sql(int staff_ID, int publication_ID) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                deleteEditsQuery.setInt(1, staff_ID);
+                                deleteEditsQuery.setInt(2, publication_ID);
+                                deleteEditsQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void addEditor() {
+                try {
+                        System.out.print("\n Enter the details of the Editor\n");
+                        System.out.print("\n Staff ID of the Editor\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Type of Editor Staff/Invited \n");
+                        String type = scanner.nextLine();
+                        String role = "Editor";
+                        System.out.print("\n name of Editor \n");
+                        String name = scanner.nextLine();
+                        System.out.print("\n phone_number of Editor \n");
+                        String phone_number = scanner.nextLine();
+                        System.out.print("\n age of Editor \n");
+                        int age = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n gender of Editor M/F \n");
+                        String gender = scanner.nextLine();
+                        System.out.print("\n email  of Editor \n");
+                        String email = scanner.nextLine();
+                        System.out.print("\n Address  of Editor \n");
+                        String Address = scanner.nextLine();
+                        addEditor_sql(staff_ID, type, name, role, phone_number, age, gender, email, Address);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void addEdits() {
+                try {
+                        System.out.print("\n Enter the details of the Editor and Publication that is being edited\n");
+                        System.out.print("\n Staff ID of the Editor\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Editor\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        addEdits_sql(staff_ID, publication_ID);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void deleteEdits() {
+                try {
+                        System.out.print(
+                                        "\n Enter the details of the Editor and Publication that is being edited to be delete\n");
+                        System.out.print("\n Staff ID of the Editor\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Editor\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        deleteEdits_sql(staff_ID, publication_ID);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void addWritesBook_sql(int staff_ID, int publication_ID) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                addWritesBookQuery.setInt(1, staff_ID);
+                                addWritesBookQuery.setInt(2, publication_ID);
+                                addWritesBookQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void deleteWritesBook_sql(int staff_ID, int publication_ID) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                deleteWritesBookQuery.setInt(1, staff_ID);
+                                deleteWritesBookQuery.setInt(2, publication_ID);
+                                deleteWritesBookQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void addWritesBook() {
+                try {
+                        System.out.print("\n Enter the details of the Author and Publication that is being written\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Author\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        addWritesBook_sql(staff_ID, publication_ID);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void deleteWritesBook() {
+                try {
+                        System.out.print(
+                                        "\n Enter the details of the Author and Publication that is being writtn to be delete\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Author\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        deleteWritesBook_sql(staff_ID, publication_ID);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void addWritesArticles_sql(int staff_ID, int publication_ID, String title) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                addWritesArticlesQuery.setInt(1, staff_ID);
+                                addWritesArticlesQuery.setInt(2, publication_ID);
+                                addWritesArticlesQuery.setString(3, title);
+                                addWritesArticlesQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+        }
+
+        public static void deleteWritesArticles_sql(int staff_ID, int publication_ID, String title) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                deleteWritesArticlesQuery.setInt(1, staff_ID);
+                                deleteWritesArticlesQuery.setInt(2, publication_ID);
+                                deleteWritesArticlesQuery.setString(3, title);
+                                deleteWritesArticlesQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void addWritesArticles() {
+                try {
+                        System.out.print("\n Enter the details of the Author and Publication that is being written\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Author\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Title of the article\n");
+                        String title = scanner.nextLine();
+                        addWritesArticles_sql(staff_ID, publication_ID, title);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void deleteWritesArticles() {
+                try {
+                        System.out.print(
+                                        "\n Enter the details of the Author and Publication that is being written to be delete\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Publication ID of the Author\n");
+                        int publication_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Title of the article\n");
+                        String title = scanner.nextLine();
+                        scanner.nextLine();
+                        deleteWritesArticles_sql(staff_ID, publication_ID, title);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static ResultSet getEditorByID(int staff_ID) {
+                try {
+                        showEditorByID.setInt(1, staff_ID);
+                        result = showEditorByID.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return null;
+                        }
+                        result.first();
+                        return result;
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+        public static ResultSet getAuthorByID(int staff_ID) {
+                try {
+                        showAuthorByID.setInt(1, staff_ID);
+                        result = showAuthorByID.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Authors exist");
+                                return null;
+                        }
+                        result.first();
+                        return result;
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+        public static void showAuthorByID() {
+                try {
+                        System.out.print(
+                                        "\n Enter the ID of Author\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        result = getAuthorByID(staff_ID);
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void showEditorByID() {
+                try {
+                        System.out.print(
+                                        "\n Enter the ID of Editor\n");
+                        System.out.print("\n Staff ID of the Editor\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        result = getEditorByID(staff_ID);
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static ResultSet findPublicationByEditor() {
+                try {
+                        System.out.print(
+                                        "\n Enter the ID of Editor\n");
+                        System.out.print("\n Staff ID of the Editor\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        findPublicationByEditorQuery.setInt(1, staff_ID);
+                        result = findPublicationByEditorQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Publications is assigned to Editor");
+                                return null;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+        public static ResultSet findBookByAuthor() {
+                try {
+                        System.out.print(
+                                        "\n Enter the ID of Author\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        findBookByAuthorQuery.setInt(1, staff_ID);
+                        result = findBookByAuthorQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No books for Authors exist");
+                                return null;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+        public static ResultSet findArticleByAuthor() {
+                try {
+                        System.out.print(
+                                        "\n Enter the ID of Author\n");
+                        System.out.print("\n Staff ID of the Author\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        findArticleByAuthorQuery.setInt(1, staff_ID);
+                        result = findArticleByAuthorQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No articles for Authors exist");
+                                return null;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return null;
+        }
+
+        public static void updateStaff_sql(int staff_ID, String name, String phone_number,
+                        int age, String gender, String email, String Address) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                updateStaffQuery.setString(1, name);
+                                updateStaffQuery.setString(2, phone_number);
+                                updateStaffQuery.setInt(3, age);
+                                updateStaffQuery.setString(4, gender);
+                                updateStaffQuery.setString(5, email);
+                                updateStaffQuery.setString(6, Address);
+                                updateStaffQuery.setInt(7, staff_ID);
+                                updateStaffQuery.executeUpdate();
+
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void updateStaff() {
+                try {
+                        System.out.print("\n Enter the details of the Author/Editor to be Updated\n");
+                        System.out.print("\n Staff ID of the Author/Editor\n");
+
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        result = getEditorByID(staff_ID);
+                        if (result == null) {
+                                System.out.println("Cant find Author/Editor");
+                                return;
+                        }
+                        System.out.print("\n name of Author/Editor  (Press Enter If you dont want to change)\n");
+                        String name = scanner.nextLine();
+                        if (name.isEmpty()) {
+                                name = result.getString("name");
+                        }
+                        System.out.print("\n phone_number of Author/Editor (Press Enter If you dont want to change)\n");
+                        String phone_number = scanner.nextLine();
+                        if (phone_number.isEmpty()) {
+                                phone_number = result.getString("phone_number");
+                        }
+                        System.out.print("\n age of Author/Editor (Enter 0 If you dont want to change)\n");
+                        int age = scanner.nextInt();
+                        scanner.nextLine();
+                        if (age == 0) {
+                                age = result.getInt("age");
+                        }
+                        System.out.print("\n gender of Author/Editor M/F (Press Enter If you dont want to change)\n");
+                        String gender = scanner.nextLine();
+                        if (gender.isEmpty()) {
+                                gender = result.getString("gender");
+                        }
+                        System.out.print("\n email  of Author/Editor (Press Enter If you dont want to change)\n");
+                        String email = scanner.nextLine();
+                        if (email.isEmpty()) {
+                                email = result.getString("email");
+                        }
+                        System.out.print("\n Address  of Author/Editor (Press Enter If you dont want to change)\n");
+                        String Address = scanner.nextLine();
+                        if (Address.isEmpty()) {
+                                Address = result.getString("Address");
+                        }
+                        updateStaff_sql(staff_ID, name, phone_number, age, gender, email, Address);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void deleteStaff() {
+                try {
+                        System.out.print("\n Enter the details of the Author/Editor to be Deleted\n");
+                        System.out.print("\n Staff ID of the Author\n");
+
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        result = getEditorByID(staff_ID);
+                        if (result == null) {
+                                System.out.println("Cant find Author/Editor");
+                                return;
+                        }
+                        try {
+                                connection.setAutoCommit(false);
+                                try {
+                                        deleteStaffQuery.setInt(1, staff_ID);
+                                        deleteStaffQuery.executeUpdate();
+
+                                        connection.commit();
+                                } catch (SQLException e) {
+                                        connection.rollback();
+                                        e.printStackTrace();
+                                } finally {
+                                        connection.setAutoCommit(true);
+                                }
+                        } catch (SQLException e) {
+                                e.printStackTrace();
+                        }
+
+                } catch (Throwable err) {
+                        err.printStackTrace();
                 }
         }
 
@@ -1246,36 +1942,6 @@ public class WolfPubDB {
                 }
         }
 
-        public static void displayAllAuthors() {
-                try {
-                        result = showAuthors.executeQuery();
-                        if (!result.next()) {
-                                System.out.println("No Editors exist");
-                                return;
-                        }
-                        result.beforeFirst();
-                        display_table(result);
-                        System.out.println();
-                } catch (Exception e) {
-                        e.printStackTrace();
-                }
-        }
-
-        public static void displayAllEditors() {
-                try {
-                        result = showEditors.executeQuery();
-                        if (!result.next()) {
-                                System.out.println("No Editors exist");
-                                return;
-                        }
-                        result.beforeFirst();
-                        display_table(result);
-                        System.out.println();
-                } catch (Exception e) {
-                        e.printStackTrace();
-                }
-        }
-
         public static void displayStaffMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1286,45 +1952,97 @@ public class WolfPubDB {
                         System.out.println("3.  Delete an editor ");
                         System.out.println("4.  Assign Editor to Publication");
                         System.out.println("5.  Remove Editor as a publication editor");
-                        System.out.println("6.  Find Editor");
+                        System.out.println("6.  Find Editor by ID");
                         System.out.println("7.  Show all Editors");
+                        System.out.println("8.  Find Publication by Editor");
                         System.out.println("---------------Authors---------------");
-                        System.out.println("8.  Add a new Autor");
-                        System.out.println("9.  Update an Author");
-                        System.out.println("10.  Delete an author");
-                        System.out.println("11. Add an author to a Book");
-                        System.out.println("12. Add an author to an Article");
-                        System.out.println("13. Remove an author to a Book");
-                        System.out.println("14. Remove an author to a Article");
-                        System.out.println("15. Find Authors");
-                        System.out.println("16.  Show all Authors");
+                        System.out.println("9.  Add a new Autor");
+                        System.out.println("10.  Update an Author");
+                        System.out.println("11.  Delete an author");
+                        System.out.println("12. Add an author to a Book");
+                        System.out.println("13. Add an author to an Article");
+                        System.out.println("14. Remove an author to a Book");
+                        System.out.println("15. Remove an author to a Article");
+                        System.out.println("16. Find Author by ID");
+                        System.out.println("17. Show all Authors");
+                        System.out.println("18. Find Book by Author");
+                        System.out.println("19. Find Brticle by Author");
                         System.out.println("---------------Staff Payment---------------");
-                        System.out.println("17. Enter payment for Staff");
-                        System.out.println("18. Update Date of collection of payment for Staff");
+                        System.out.println("20. Enter payment for Staff");
+                        System.out.println("21. Update Date of collection of payment for Staff");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("19. Go back to previous Menu");
-                        System.out.println("20. Exit");
+                        System.out.println("22. Go back to previous Menu");
+                        System.out.println("23. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
+                                        addEditor();
                                         break;
                                 case "2":
+                                        updateStaff();
                                         break;
                                 case "3":
+                                        deleteStaff();
                                         break;
                                 case "4":
+                                        addEdits();
+                                        break;
+                                case "5":
+                                        deleteEdits();
+                                        break;
+                                case "6":
+                                        showEditorByID();
                                         break;
                                 case "7":
                                         displayAllEditors();
                                         break;
+                                case "8":
+                                        findPublicationByEditor();
+                                        break;
+                                case "9":
+                                        addAuthor();
+                                        break;
+                                case "10":
+                                        updateStaff();
+                                        break;
+                                case "11":
+                                        deleteStaff();
+                                        break;
+                                case "12":
+                                        addWritesBook();
+                                        break;
+                                case "13":
+                                        addWritesArticles();
+                                        break;
+                                case "14":
+                                        deleteWritesBook();
+                                        break;
+                                case "15":
+                                        deleteWritesArticles();
+                                        break;
                                 case "16":
+                                        showAuthorByID();
+                                        break;
+                                case "17":
                                         displayAllAuthors();
                                         break;
+                                case "18":
+                                        findBookByAuthor();
+                                        break;
                                 case "19":
-                                        return;
+                                        findArticleByAuthor();
+                                        break;
                                 case "20":
+                                        findBookByAuthor();
+                                        break;
+                                case "21":
+                                        findArticleByAuthor();
+                                        break;
+                                case "22":
+                                        return;
+                                case "23":
                                         System.exit(0);
                                         break;
                                 default:
@@ -1560,6 +2278,10 @@ public class WolfPubDB {
                                         + "`name` VARCHAR(120) NOT NULL,"
                                         + "`role` VARCHAR(15) NOT NULL,"
                                         + "`phone_number` VARCHAR(20) NOT NULL,"
+                                        + "`Age` INTEGER ,"
+                                        + "`Gender` VARCHAR(1) ,"
+                                        + "`Email` VARCHAR(255) , "
+                                        + "`Address` VARCHAR(255) , "
                                         + "PRIMARY KEY(`staff_ID`)"
                                         + ");";
 
@@ -1745,15 +2467,24 @@ public class WolfPubDB {
                 try {
                         connection.setAutoCommit(false);
 
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6991,'Subodh','Admin','9391234560');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6992,'Pallavi','Author','9391234561');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6993,'Harini','Editor','9391234562');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6994,'Saurab','Author','9391234563');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6995,'Harish','Editor','9391234564');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6996,'Eshwar','Author','9391234565');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6997,'Sandeep','Editor','9391234566');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6998,'Harika','Author','9391234567');");
-                        statement.executeUpdate("INSERT INTO Staff VALUES (6999,'Bhavya','Editor','9391234568');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6991,'Subodh','Admin','9391234560', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6992,'Pallavi','Author','9391234561', 36, 'F', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6993,'Harini','Editor','9391234562', 36, 'F', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6994,'Saurab','Author','9391234563', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6995,'Harish','Editor','9391234564', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6996,'Eshwar','Author','9391234565', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6997,'Sandeep','Editor','9391234566', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6998,'Harika','Author','9391234567', 36, 'F', '3001@gmail.com', '21 ABC St, NC 27');");
+                        statement.executeUpdate(
+                                        "INSERT INTO Staff VALUES (6999,'Bhavya','Editor','9391234568', 36, 'F', '3001@gmail.com', '21 ABC St, NC 27');");
 
                         statement.executeUpdate("INSERT INTO Editors VALUES (6993,'Staff');");
                         statement.executeUpdate("INSERT INTO Editors VALUES (6995,'Invited');");
@@ -1969,16 +2700,16 @@ public class WolfPubDB {
                                         + "(2002, '9291234568', 'Raleigh', '2200, B Street, NC', 'wholesaler', 'BookDist', 0, 'Alex')");
                         // Staff
                         statement.executeUpdate("INSERT INTO Staff "
-                                        + "(staff_ID, name, role, phone_number) VALUES"
-                                        + "(3001, 'John', 'Editor', '9391234567')");
+                                        + "(staff_ID, name, role, phone_number, Age, Gender, Email, Address) VALUES"
+                                        + "(3001, 'John', 'Editor', '9391234567', 36, 'M', '3001@gmail.com', '21 ABC St, NC 27')");
 
                         statement.executeUpdate("INSERT INTO Staff "
-                                        + "(staff_ID, name, role, phone_number) VALUES"
-                                        + "(3002, 'Ethen', 'Editor', '9491234567')");
+                                        + "(staff_ID, name, role, phone_number, Age, Gender, Email, Address) VALUES"
+                                        + "(3002, 'Ethen', 'Editor', '9491234567', 30, 'M', '3002@gmail.com', '21 ABC St, NC 27606')");
 
                         statement.executeUpdate("INSERT INTO Staff "
-                                        + "(staff_ID, name, role, phone_number) VALUES"
-                                        + "(3003, 'Cathy', 'Author', '9591234567')");
+                                        + "(staff_ID, name, role, phone_number, Age, Gender, Email, Address) VALUES"
+                                        + "(3003, 'Cathy', 'Author', '9591234567', 28, 'F', '3003@gmail.com', '3300 AAA St, NC 27606')");
 
                         // Orders
                         statement.executeUpdate("INSERT INTO Orders "
