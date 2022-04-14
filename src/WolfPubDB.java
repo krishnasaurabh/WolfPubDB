@@ -157,6 +157,7 @@ public class WolfPubDB {
         private static PreparedStatement findPublicationByEditorQuery;
         private static PreparedStatement findBookByAuthorQuery;
         private static PreparedStatement findArticleByAuthorQuery;
+        private static PreparedStatement showPaymentsForStaff;
 
         public static void generateDDLAndDMLStatements() {
                 String query;
@@ -481,8 +482,11 @@ public class WolfPubDB {
                         query = "SELECT * FROM WritesArticles NATURAL JOIN Articles WHERE staff_ID = ?;";
                         findArticleByAuthorQuery = connection.prepareStatement(query);
 
-                } catch (Exception e) {
-                        System.out.println("Failure");
+                        query = "SELECT * FROM Staff NATURAL JOIN Payments WHERE staff_ID = ?;";
+                        showPaymentsForStaff = connection.prepareStatement(query);
+
+                } catch (SQLException e) {
+                        e.printStackTrace();
                 }
         }
 
@@ -686,20 +690,30 @@ public class WolfPubDB {
                 System.out.println("Enter type");
                 String type = scanner.nextLine();
 
-                insertPublication(pid, title, topic, type, price);
-                insertBook(pid, isbn, edition, publication_date);
+                insertBook(pid, title, topic, type, price, isbn, edition, publication_date);
         }
 
-        public static void insertBook(int publicationID, int isbn, int edition, String publicationDate) {
+        public static void insertBook(int publicationID, String title, String topic, String type, Double price,
+                        int isbn, int edition, String publicationDate) {
                 try {
                         connection.setAutoCommit(false);
                         try {
+                                // first we insert a publication table
+                                insertPublicationQuery.setInt(1, publicationID);
+                                insertPublicationQuery.setString(2, title);
+                                insertPublicationQuery.setString(3, topic);
+                                insertPublicationQuery.setString(4, type);
+                                insertPublicationQuery.setDouble(5, price);
+                                insertPublicationQuery.executeUpdate();
 
+                                // then we insert into books table
                                 insertBookQuery.setInt(1, publicationID);
                                 insertBookQuery.setInt(2, isbn);
                                 insertBookQuery.setInt(3, edition);
                                 insertBookQuery.setString(4, publicationDate);
                                 insertBookQuery.executeUpdate();
+
+                                // we commit the transaction, if and only if both insertions are successful
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -820,10 +834,20 @@ public class WolfPubDB {
                 }
         }
 
-        public static void insertPeriodical(int publicationID, String issueDate, String periodicity) {
+        public static void insertPeriodical(int publicationID, String issueDate, String topic, String periodicity,
+                        String title, String type, Double price) {
                 try {
                         connection.setAutoCommit(false);
                         try {
+                                // first insert into publication
+                                insertPublicationQuery.setInt(1, publicationID);
+                                insertPublicationQuery.setString(2, title);
+                                insertPublicationQuery.setString(3, topic);
+                                insertPublicationQuery.setString(4, type);
+                                insertPublicationQuery.setDouble(5, price);
+                                insertPublicationQuery.executeUpdate();
+
+                                // then insert into periodical
                                 insertPeriodicalQuery.setInt(1, publicationID);
                                 insertPeriodicalQuery.setString(2, issueDate);
                                 insertPeriodicalQuery.setString(3, periodicity);
@@ -1173,6 +1197,12 @@ public class WolfPubDB {
                                 insertOrderQuery.setDouble(7, total_cost);
                                 insertOrderQuery.setDouble(8, shipping_cost);
                                 insertOrderQuery.executeUpdate();
+
+                                // Once each order is successfully placed, we need to generate the bill
+                                // as the outstanding balance gets updated each time an order is placed
+                                generateBillQuery.setInt(1, order_number);
+                                generateBillQuery.executeUpdate();
+
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -1305,7 +1335,7 @@ public class WolfPubDB {
                         try {
                                 updatePaymentCollectionDateQuery.setString(1, collection_date);
                                 updatePaymentCollectionDateQuery.setInt(2, staff_ID);
-                                updatePaymentCollectionDateQuery.setString(2, salary_date);
+                                updatePaymentCollectionDateQuery.setString(3, salary_date);
                                 updatePaymentCollectionDateQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
@@ -1864,6 +1894,27 @@ public class WolfPubDB {
                 return null;
         }
 
+        public static void displayPaymentsForStaff() {
+                try {
+
+                        System.out.print("\n Enter the Staff ID for the payments to be displayed\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        showPaymentsForStaff.setInt(1, staff_ID);
+                        result = showPaymentsForStaff.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No payments exist for entered staff");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return;
+        }
+
         public static void updateStaff_sql(int staff_ID, String name, String phone_number,
                         int age, String gender, String email, String Address) {
                 try {
@@ -1911,8 +1962,7 @@ public class WolfPubDB {
                         scanner.nextLine();
                         System.out.println("\n Book Publication Date in the format - YYYY-MM-DD ex:2022-03-02: ");
                         String publicationDate = scanner.nextLine();
-                        insertPublication(publicationID, title, topic, type, price);
-                        insertBook(publicationID, isbn, edition, publicationDate);
+                        insertBook(publicationID, title, topic, type, price, isbn, edition, publicationDate);
                 } catch (Exception e) {
                         System.out.println("Failure");
                 }
@@ -1934,9 +1984,7 @@ public class WolfPubDB {
                         String issueDate = scanner.nextLine();
                         System.out.println("\n Periodical periodicity:");
                         String periodicity = scanner.nextLine();
-
-                        insertPublication(publicationID, title, topic, type, price);
-                        insertPeriodical(publicationID, issueDate, periodicity);
+                        insertPeriodical(publicationID, issueDate, topic, periodicity, title, type, price);
 
                 } catch (Exception e) {
                         System.out.println("Failure");
@@ -2044,6 +2092,7 @@ public class WolfPubDB {
 
         public static void findByISBN(int val) {
                 try {
+
                         findBookByISBNdQuery.setInt(1, val);
                         result = findBookByISBNdQuery.executeQuery();
                         if (!result.next()) {
@@ -2057,7 +2106,6 @@ public class WolfPubDB {
                 } catch (Exception e) {
                         System.out.println("Failure");
                 }
-
         }
 
         public static void displayArticlesInPeriodical(int publicationID) {
@@ -2179,6 +2227,45 @@ public class WolfPubDB {
                 }
         }
 
+        public static void findPeriodicalByPID(int val) {
+                try {
+                        findPeriodicalByPIDQuery.setInt(1, val);
+                        result = findPeriodicalByPIDQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such books exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+
+        }
+
+        public static void findPeriodicals() {
+                System.out.println("1.  Find periodical by publication_ID");
+                String response = scanner.next();
+                int val;
+                switch (response) {
+                        case "1":
+                                System.out.println("Enter publication ID");
+                                val = scanner.nextInt();
+                                scanner.nextLine();
+                                findPeriodicalByPID(val);
+                                break;
+                        case "2":
+                                return;
+                        case "3":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Please enter correct choice from above.");
+                                break;
+                }
+        }
+
         public static void insertPeriodicalMenu() {
                 System.out.println("Enter publication ID");
                 int publicationID = scanner.nextInt();
@@ -2196,9 +2283,7 @@ public class WolfPubDB {
                 scanner.nextLine();
                 System.out.println("Enter the topic");
                 String topic = scanner.nextLine();
-
-                insertPublication(publicationID, title, topic, type, price);
-                insertPeriodical(publicationID, issue_date, periodicity);
+                insertPeriodical(publicationID, issue_date, topic, periodicity, title, type, price);
 
         }
 
@@ -2279,47 +2364,9 @@ public class WolfPubDB {
                         } catch (SQLException e) {
                                 e.printStackTrace();
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
-                }
-        }
-
-        public static void findPeriodicalByPID(int val) {
-                try {
-                        findPeriodicalByPIDQuery.setInt(1, val);
-                        result = findPeriodicalByPIDQuery.executeQuery();
-                        if (!result.next()) {
-                                System.out.println("No such books exist");
-                                return;
-                        }
-                        result.beforeFirst();
-                        display_table(result);
-                        System.out.println();
                 } catch (Exception e) {
-                        System.out.println("Failure");
-                }
-
-        }
-
-        public static void findPeriodicals() {
-                System.out.println("1.  Find periodical by publication_ID");
-                String response = scanner.next();
-                int val;
-                switch (response) {
-                        case "1":
-                                System.out.println("Enter publication ID");
-                                val = scanner.nextInt();
-                                scanner.nextLine();
-                                findPeriodicalByPID(val);
-                                break;
-                        case "2":
-                                return;
-                        case "3":
-                                System.exit(0);
-                                break;
-                        default:
-                                System.out.println("Please enter correct choice from above.");
-                                break;
+                        System.out.println("Failure. Unable to delete staff");
+                        ;
                 }
         }
 
@@ -2859,9 +2906,10 @@ public class WolfPubDB {
                         System.out.println("---------------Staff Payment---------------");
                         System.out.println("20. Enter payment for Staff");
                         System.out.println("21. Update Date of collection of payment for Staff");
+                        System.out.println("22. Show payments for Staff ID");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("22. Go back to previous Menu");
-                        System.out.println("23. Exit");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2930,8 +2978,160 @@ public class WolfPubDB {
                                         updateCollectionDateOfPayment();
                                         break;
                                 case "22":
-                                        return;
+                                        displayPaymentsForStaff();
+                                        break;
                                 case "23":
+                                        return;
+                                case "24":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+        public static void displayEditorMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nEditor Menu\n");
+                        System.out.println("---------------Editors Menu---------------");
+                        System.out.println("1. Show Publications assigned to Editor");
+                        System.out.println("2. Update a chapter of a Book");
+                        System.out.println("3. Update text of article");
+                        System.out.println("4. Show payments to Editor");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("5. Go back to previous Menu");
+                        System.out.println("6. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        findPublicationByEditor();
+                                        break;
+                                case "2":
+                                        updateBookMenu();
+                                        break;
+                                case "3":
+                                        updateArticleMenu();
+                                        break;
+                                case "4":
+                                        displayPaymentsForStaff();
+                                        break;
+                                case "5":
+                                        return;
+                                case "6":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+        public static void displayDistributorsMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nDistributors Menu\n");
+                        System.out.println("---------------Distributors Menu---------------");
+                        System.out.println("4.  Place an order");
+                        System.out.println("5.  Show All orders for distributor");
+                        System.out.println("15. Show balance for distributor account");
+                        System.out.println("15. Make payment to distributor account");
+                        System.out.println("22. Show payments to distributor account");
+                        System.out.println("---------------Publications Menu---------------");
+                        System.out.println("6.  Find books");
+                        System.out.println("16. Find articles");
+                        System.out.println("7.  Show all Books");
+                        System.out.println("17. Show all periodicals");
+                        System.out.println("18. Show all articles for a periodical");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        addEditor();
+                                        break;
+                                case "2":
+                                        updateStaff();
+                                        break;
+                                case "3":
+                                        deleteStaff();
+                                        break;
+                                case "4":
+                                        addEdits();
+                                        break;
+                                case "5":
+                                        deleteEdits();
+                                        break;
+                                case "23":
+                                        return;
+                                case "24":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+        public static void displayAuthorMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nAuthor Menu\n");
+                        System.out.println("---------------Authors Menu---------------");
+                        System.out.println("1. Add a new book edition");
+                        System.out.println("2. Add an article to a Periodical");
+                        System.out.println("3. Add a chapter to a Book");
+                        System.out.println("4. Show Books by Author");
+                        System.out.println("5. Show Articles by Author");
+                        System.out.println("6. Show payments to Author");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("7. Go back to previous Menu");
+                        System.out.println("8. Exit");
+                        String title, text, creationDate;
+                        int publicationID;
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        insertBookMenu();
+                                        break;
+                                case "2":
+                                        System.out.println("Enter publication ID");
+                                        publicationID = scanner.nextInt();
+                                        scanner.nextLine();
+                                        System.out.println("Enter the title of the article");
+                                        title = scanner.nextLine();
+                                        System.out.println("Enter the text of the article");
+                                        text = scanner.nextLine();
+                                        System.out.println("Enter the creation date of the article");
+                                        creationDate = scanner.nextLine();
+                                        insertArticle(publicationID, title, text, creationDate);
+                                        break;
+                                case "3":
+                                        insertBookMenu();
+                                        break;
+                                case "4":
+                                        findBookByAuthor();
+                                        break;
+                                case "5":
+                                        findArticleByAuthor();
+                                        break;
+                                case "6":
+                                        displayPaymentsForStaff();
+                                        break;
+                                case "7":
+                                        return;
+                                case "8":
                                         System.exit(0);
                                         break;
                                 default:
@@ -2948,11 +3148,9 @@ public class WolfPubDB {
                         System.out.println("1.Show Publications Menu");
                         System.out.println("2.Show Staff Menu");
                         System.out.println("3.Show Distributors Menu");
-                        System.out.println("4.Show Orders Menu");
-                        System.out.println("6.Show Distributor Payments Menu");
-                        System.out.println("7.Show Reports Menu");
-                        System.out.println("8.Go back to previous Menu");
-                        System.out.println("9.Exit");
+                        System.out.println("4.Show Reports Menu");
+                        System.out.println("5.Go back to previous Menu");
+                        System.out.println("6.Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2979,7 +3177,6 @@ public class WolfPubDB {
                                         break;
                         }
                 }
-
         }
 
         public static void displayDBAdminMenu() throws SQLException {
@@ -3186,13 +3383,13 @@ public class WolfPubDB {
                                         displayAdminMenu();
                                         break;
                                 case "2":
-                                        // displayEditorMenu();
+                                        displayEditorMenu();
                                         break;
                                 case "3":
-                                        // displayAuthorMenu();
+                                        displayAuthorMenu();
                                         break;
                                 case "4":
-                                        // displayDistributorMenu();
+                                        displayDistributorsMenu();
                                         break;
                                 case "5":
                                         displayDBAdminMenu();
@@ -3859,7 +4056,6 @@ public class WolfPubDB {
 
         private static void connectToDatabase() throws ClassNotFoundException, SQLException {
                 Class.forName("org.mariadb.jdbc.Driver");
-                // generateDDLAndDMLStatements();
                 // String user = "kvankad";
                 // String password = "Builder!12";
                 String user = "sthota";
