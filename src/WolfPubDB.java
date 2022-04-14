@@ -2194,6 +2194,148 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayEditorMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nEditor Menu\n");
+                        System.out.println("---------------Editors Menu---------------");
+                        System.out.println("8.  Show Publications assigned to Editor");
+                        System.out.println("5.  Update a chapter of a Book");
+                        System.out.println("15. Update text of article");
+                        System.out.println("15. Update text of article");
+                        System.out.println("22. Show payments to Editor");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        addEditor();
+                                        break;
+                                case "2":
+                                        updateStaff();
+                                        break;
+                                case "3":
+                                        deleteStaff();
+                                        break;
+                                case "4":
+                                        addEdits();
+                                        break;
+                                case "5":
+                                        deleteEdits();
+                                        break;
+                                case "23":
+                                        return;
+                                case "24":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+        public static void displayDistributorsMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nDistributors Menu\n");
+                        System.out.println("---------------Distributors Menu---------------");
+                        System.out.println("4.  Place an order");
+                        System.out.println("5.  Show All orders for distributor");
+                        System.out.println("15. Show balance for distributor account");
+                        System.out.println("15. Make payment to distributor account");
+                        System.out.println("22. Show payments to distributor account");
+                        System.out.println("---------------Publications Menu---------------");
+                        System.out.println("6.  Find books");
+                        System.out.println("16. Find articles");
+                        System.out.println("7.  Show all Books");
+                        System.out.println("17. Show all periodicals");
+                        System.out.println("18. Show all articles for a periodical");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        addEditor();
+                                        break;
+                                case "2":
+                                        updateStaff();
+                                        break;
+                                case "3":
+                                        deleteStaff();
+                                        break;
+                                case "4":
+                                        addEdits();
+                                        break;
+                                case "5":
+                                        deleteEdits();
+                                        break;
+                                case "23":
+                                        return;
+                                case "24":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
+        public static void displayAuthorMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nAuthor Menu\n");;
+                        System.out.println("---------------Authors Menu---------------");
+                        System.out.println("1.  Add a new book edition");
+                        System.out.println("12. Add an article to a Periodical");
+                        System.out.println("4.  Add a chapter to a Book");
+                        System.out.println("18. Show Books by Author");
+                        System.out.println("19. Show Articles by Author");
+                        System.out.println("22. Show payments to Author");
+                        System.out.println("---------------MENU ACTIONS---------------");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
+
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        addEditor();
+                                        break;
+                                case "2":
+                                        updateStaff();
+                                        break;
+                                case "3":
+                                        deleteStaff();
+                                        break;
+                                case "4":
+                                        addEdits();
+                                        break;
+                                case "5":
+                                        deleteEdits();
+                                        break;
+                                case "6":
+                                        showEditorByID();
+                                        break;
+                                case "23":
+                                        return;
+                                case "24":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+        }
+
         public static void displayAdminMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -2230,7 +2372,6 @@ public class WolfPubDB {
                                         break;
                         }
                 }
-
         }
 
         public static void displayDBAdminMenu() throws SQLException {
@@ -2288,13 +2429,13 @@ public class WolfPubDB {
                                         displayAdminMenu();
                                         break;
                                 case "2":
-                                        // displayEditorMenu();
+                                        displayEditorMenu();
                                         break;
                                 case "3":
-                                        // displayAuthorMenu();
+                                        displayAuthorMenu();
                                         break;
                                 case "4":
-                                        // displayDistributorMenu();
+                                        displayDistributorsMenu();
                                         break;
                                 case "5":
                                         displayDBAdminMenu();
