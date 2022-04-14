@@ -9,12 +9,11 @@ import java.util.Scanner;
 
 public class WolfPubDB {
         static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
+
         private static Connection connection = null;
         private static Statement statement = null;
-
         private static ResultSet result = null;
-
-        static Scanner scanner;
+        static Scanner scanner = null;
 
         private static PreparedStatement editorAssignmentQuery;
         private static PreparedStatement editorUnAssignmentQuery;
@@ -435,6 +434,7 @@ public class WolfPubDB {
                                                 updateBookISBNQuery.setString(1, newValue);
                                                 updatePublicationTitleQuery.setInt(2, publicationID);
                                                 updatePublicationTitleQuery.executeUpdate();
+
                                                 break;
 
                                         case "2":
@@ -829,25 +829,6 @@ public class WolfPubDB {
 
         }
 
-        public static void deleteOrder(int order_number) {
-                try {
-                        connection.setAutoCommit(false);
-                        try {
-                                deleteOrderQuery.setInt(1, order_number);
-                                deleteOrderQuery.executeUpdate();
-                                connection.commit();
-                        } catch (SQLException e) {
-                                connection.rollback();
-                                e.printStackTrace();
-                        } finally {
-                                connection.setAutoCommit(true);
-                        }
-                } catch (SQLException e) {
-                        e.printStackTrace();
-                }
-
-        }
-
         public static void insertPayment(int staff_ID, String salary_date, double payment_amount,
                         String collection_date) {
                 try {
@@ -1195,45 +1176,6 @@ public class WolfPubDB {
                 }
         }
 
-        public static void displayAdminMenu() {
-                while (true) {
-                        clearConsoleScreen();
-                        System.out.println("\nWelcome Admin. Below are the operations you can perform.\n");
-                        System.out.println("1.Show Publications Menu");
-                        System.out.println("2.Show Staff Menu");
-                        System.out.println("3.Show Distributors Menu");
-                        System.out.println("4.Show Reports Menu");
-                        System.out.println("5.Go back to previous Menu");
-                        System.out.println("6.Exit");
-
-                        System.out.print("\nEnter Choice: ");
-                        String response = scanner.nextLine();
-                        switch (response) {
-                                case "1":
-                                        displayPublicationsMenu();
-                                        break;
-                                case "2":
-                                        displayStaffMenu();
-                                        break;
-                                case "3":
-                                        displayDistributorMenu();
-                                        break;
-                                case "4":
-                                        displayReportsMenu();
-                                        break;
-                                case "5":
-                                        return;
-                                case "6":
-                                        System.exit(0);
-                                        break;
-                                default:
-                                        System.out.println("Please enter correct choice from above.");
-                                        break;
-                        }
-                }
-
-        }
-
         public static void displayDBAdminMenu() throws SQLException {
                 while (true) {
                         clearConsoleScreen();
@@ -1273,6 +1215,25 @@ public class WolfPubDB {
                                         System.out.println("Please enter correct choice from above.");
                                         break;
                         }
+                }
+
+        }
+
+        public static void deleteOrder(int order_number) {
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                deleteOrderQuery.setInt(1, order_number);
+                                deleteOrderQuery.executeUpdate();
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
                 }
 
         }
@@ -1333,8 +1294,46 @@ public class WolfPubDB {
 
         }
 
-        public static void displayMenu() throws SQLException {
+        public static void displayAdminMenu() {
+                while (true) {
+                        clearConsoleScreen();
+                        System.out.println("\nWelcome Admin. Below are the operations you can perform.\n");
+                        System.out.println("1.Show Publications Menu");
+                        System.out.println("2.Show Staff Menu");
+                        System.out.println("3.Show Distributors Menu");
+                        System.out.println("4.Show Reports Menu");
+                        System.out.println("5.Go back to previous Menu");
+                        System.out.println("6.Exit");
 
+                        System.out.print("\nEnter Choice: ");
+                        String response = scanner.nextLine();
+                        switch (response) {
+                                case "1":
+                                        displayPublicationsMenu();
+                                        break;
+                                case "2":
+                                        displayStaffMenu();
+                                        break;
+                                case "3":
+                                        displayDistributorMenu();
+                                        break;
+                                case "4":
+                                        displayReportsMenu();
+                                        break;
+                                case "5":
+                                        return;
+                                case "6":
+                                        System.exit(0);
+                                        break;
+                                default:
+                                        System.out.println("Please enter correct choice from above.");
+                                        break;
+                        }
+                }
+
+        }
+
+        public static void displayMenu() throws SQLException {
                 while (true) {
                         System.out.println("\nEnter the user that you would like to use the system as.");
                         System.out.println(
