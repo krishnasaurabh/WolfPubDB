@@ -5,16 +5,29 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class WolfPubDB {
         static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
+
         private static Connection connection = null;
         private static Statement statement = null;
 
         private static ResultSet result = null;
 
         static Scanner scanner;
+
+        private static final String HORIZONTAL_SEP = "-";
+        private static String verticalSep = "|";
+        private static String joinSep = " ";
+        private static String[] headers;
+        private static List<String[]> rows = new ArrayList<>();
+        private static boolean rightAlign;
 
         private static PreparedStatement editorAssignmentQuery;
         private static PreparedStatement editorUnAssignmentQuery;
@@ -79,6 +92,35 @@ public class WolfPubDB {
         private static PreparedStatement updatePaymentAmountQuery;
         private static PreparedStatement updatePaymentCollectionDateQuery;
         private static PreparedStatement deletePaymentQuery;
+
+        // reports
+
+        private static PreparedStatement copiesPerDistributorPerMonthlyReportQuery;
+        private static PreparedStatement monthlyTotalRevenueReportQuery;
+        private static PreparedStatement monthlyTotalExpenseReportQuery;
+        private static PreparedStatement currentTotalDistributorsReportQuery;
+        private static PreparedStatement totalRevenuePerCityReportQuery;
+        private static PreparedStatement totalRevenuePerDistibutorReportQuery;
+        private static PreparedStatement totalRevenuePerLocationReportQuery;
+        private static PreparedStatement totalStaffPaymentsPerPeriodPerWorkTypeReportQuery;
+
+        // select statements
+
+        private static PreparedStatement showPublications;
+        private static PreparedStatement showStaff;
+        private static PreparedStatement showBooks;
+        private static PreparedStatement showOrders;
+        private static PreparedStatement showEdits;
+        private static PreparedStatement showPayments;
+        private static PreparedStatement showDistributors;
+        private static PreparedStatement showDistributorPayments;
+        private static PreparedStatement showEditors;
+        private static PreparedStatement showAuthors;
+        private static PreparedStatement showPeriodicals;
+        private static PreparedStatement showChapters;
+        private static PreparedStatement showArticles;
+        private static PreparedStatement showWritesBooks;
+        private static PreparedStatement showWritesArticles;
 
         public static void generateDDLAndDMLStatements(Connection connection) {
                 String query = "";
@@ -199,8 +241,142 @@ public class WolfPubDB {
                                         + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                         updatePaymentCollectionDateQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";
-                        ;
+
                         deletePaymentQuery = connection.prepareStatement(query);
+
+                        // report queries
+
+                        query = "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM order_date) as year,   " +
+                                        "  EXTRACT(MONTH FROM order_date) as month,distributor_account_no, publication_ID,   "
+                                        +
+                                        "  SUM(total_cost) AS order_value,   " +
+                                        "  SUM(number_of_copies) AS total_copies  " +
+                                        "  FROM Orders  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM order_date), EXTRACT(MONTH FROM order_date), distributor_account_no, publication_ID;  ";
+                        copiesPerDistributorPerMonthlyReportQuery = connection.prepareStatement(query);
+
+                        query = "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM payment_date) AS year,   " +
+                                        "  EXTRACT(MONTH FROM payment_date) AS month,    " +
+                                        "  SUM(amount_paid) AS revenue   " +
+                                        "  FROM DistributorPayments  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM payment_date), EXTRACT(MONTH FROM payment_date); ";
+                        monthlyTotalRevenueReportQuery = connection.prepareStatement(query);
+
+                        query = "  SELECT  " +
+                                        "  year,   " +
+                                        "  month,    " +
+                                        "  SUM(expenses) AS expenses   " +
+                                        "  FROM(  " +
+                                        "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM salary_date) AS year,   " +
+                                        "  EXTRACT(MONTH FROM salary_date) AS month,  " +
+                                        "  SUM(payment_amount) AS expenses   " +
+                                        "  FROM Payments  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM salary_date),   " +
+                                        "  EXTRACT(MONTH FROM salary_date)  " +
+                                        "  UNION  " +
+                                        "  SELECT   " +
+                                        "  EXTRACT(YEAR FROM order_delivery_date) AS year,  " +
+                                        "  EXTRACT(MONTH FROM order_delivery_date) AS month,  " +
+                                        "  SUM(shipping_cost) AS expenses   " +
+                                        "  FROM Orders  " +
+                                        "  GROUP BY EXTRACT(YEAR FROM order_delivery_date),  " +
+                                        "  EXTRACT(MONTH FROM order_delivery_date)  " +
+                                        "  ) AS Expenses  " +
+                                        "  GROUP BY year, month;";
+                        monthlyTotalExpenseReportQuery = connection.prepareStatement(query);
+
+                        query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
+                        currentTotalDistributorsReportQuery = connection.prepareStatement(query);
+
+                        query = "SELECT city AS distributor_city, sum(amount_paid) as revenue" +
+                                        "FROM" +
+                                        "Distributors D NATURAL JOIN DistributorPayments DP" +
+                                        "GROUP BY city;";
+                        totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+
+                        query = "  SELECT   " +
+                                        "  account_number AS distributor_account_no,   " +
+                                        "  sum(amount_paid) as revenue  " +
+                                        "  FROM DistributorPayments  " +
+                                        "  GROUP BY account_number;";
+                        totalRevenuePerDistibutorReportQuery = connection.prepareStatement(query);
+
+                        query = "  SELECT   " +
+                                        "  city,   " +
+                                        "  street_address,   " +
+                                        "  sum(amount_paid) as revenue  " +
+                                        "  FROM Distributors D NATURAL JOIN DistributorPayments DP  " +
+                                        "  GROUP BY city, street_address;  ";
+                        totalRevenuePerLocationReportQuery = connection.prepareStatement(query);
+
+                        query = "  SELECT   " +
+                                        "  S.role AS staff_role,   " +
+                                        "  A.type AS staff_type,   " +
+                                        "  SUM(payment_amount) AS total_payments  " +
+                                        "  FROM Staff S NATURAL JOIN Authors A   " +
+                                        "  NATURAL JOIN Payments SP   " +
+                                        "  WHERE salary_date >= ? AND   " +
+                                        "  salary_date <= ? " +
+                                        "  GROUP BY S.role , A.type  " +
+                                        "  UNION  " +
+                                        "  SELECT   " +
+                                        "  S.role AS staff_role,   " +
+                                        "  E.type AS staff_type,   " +
+                                        "  SUM(payment_amount) AS total_payments  " +
+                                        "  FROM Staff S NATURAL JOIN Editors E   " +
+                                        "  NATURAL JOIN Payments SP   " +
+                                        "  WHERE salary_date >= ? AND   " +
+                                        "  salary_date <= ?  " +
+                                        "  GROUP BY S.role , E.type;  ";
+                        totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Publications;";
+                        showPublications = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Staff;";
+                        showStaff = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Books;";
+                        showBooks = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Orders;";
+                        showOrders = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Edits;";
+                        showEdits = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Payments;";
+                        showPayments = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Distributors;";
+                        showDistributors = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM DistributorPayments;";
+                        showDistributorPayments = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Editors;";
+                        showEditors = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Authors;";
+                        showAuthors = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Periodicals;";
+                        showPeriodicals = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Chapters;";
+                        showChapters = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM Articles;";
+                        showArticles = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM WritesBook;";
+                        showWritesBooks = connection.prepareStatement(query);
+
+                        query = "SELECT * FROM WritesArticles;";
+                        showWritesArticles = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
                         e.printStackTrace();
@@ -804,14 +980,17 @@ public class WolfPubDB {
                                                 updateOrderNumberOfCopiesQuery.setInt(1, Integer.parseInt(newValue));
                                                 updateOrderNumberOfCopiesQuery.setInt(2, order_number);
                                                 updateOrderNumberOfCopiesQuery.executeUpdate();
+                                                break;
                                         case "4":
                                                 updateOrderTotalCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderTotalCostQuery.setInt(2, order_number);
                                                 updateOrderTotalCostQuery.executeUpdate();
+                                                break;
                                         case "5":
                                                 updateOrderShippingCostQuery.setDouble(1, Double.parseDouble(newValue));
                                                 updateOrderShippingCostQuery.setInt(2, order_number);
                                                 updateOrderShippingCostQuery.executeUpdate();
+                                                break;
                                         default:
                                                 System.out.println("Cannot perform the update operation");
                                                 break;
@@ -1150,6 +1329,21 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayAllEditors() {
+                try {
+                        result = statement.executeQuery("Select * from Editors;");
+                        if (!result.next()) {
+                                System.out.println("No Editors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
         public static void displayStaffMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -1161,21 +1355,23 @@ public class WolfPubDB {
                         System.out.println("4.  Assign Editor to Publication");
                         System.out.println("5.  Remove Editor as a publication editor");
                         System.out.println("6.  Find Editor");
+                        System.out.println("7.  Show all Editors");
                         System.out.println("---------------Authors---------------");
-                        System.out.println("7.  Add a new Autor");
-                        System.out.println("8.  Update an Author");
-                        System.out.println("9.  Delete an author");
-                        System.out.println("10. Add an author to a Book");
-                        System.out.println("11. Add an author to an Article");
-                        System.out.println("12. Remove an author to a Book");
-                        System.out.println("13. Remove an author to a Article");
-                        System.out.println("14. Find Authors");
+                        System.out.println("8.  Add a new Autor");
+                        System.out.println("9.  Update an Author");
+                        System.out.println("10.  Delete an author");
+                        System.out.println("11. Add an author to a Book");
+                        System.out.println("12. Add an author to an Article");
+                        System.out.println("13. Remove an author to a Book");
+                        System.out.println("14. Remove an author to a Article");
+                        System.out.println("15. Find Authors");
+                        System.out.println("16.  Show all Authors");
                         System.out.println("---------------Staff Payment---------------");
-                        System.out.println("15. Enter payment for Staff");
-                        System.out.println("16. Update Date of collection of payment for Staff");
+                        System.out.println("17. Enter payment for Staff");
+                        System.out.println("18. Update Date of collection of payment for Staff");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("17. Go back to previous Menu");
-                        System.out.println("18. Exit");
+                        System.out.println("19. Go back to previous Menu");
+                        System.out.println("20. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -1188,9 +1384,14 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         break;
-                                case "17":
+                                case "7":
+                                        displayAllEditors();
+                                        break;
+                                case "16":
+                                        break;
+                                case "19":
                                         return;
-                                case "18":
+                                case "20":
                                         System.exit(0);
                                         break;
                                 default:
@@ -1279,7 +1480,6 @@ public class WolfPubDB {
                                         break;
                         }
                 }
-
         }
 
         public static int generatePublicationID() throws SQLException {
@@ -1359,8 +1559,6 @@ public class WolfPubDB {
                                         break;
                                 case "4":
                                         // displayDistributorMenu();
-
-                                        // displayReportsMenu();
                                         break;
                                 case "5":
                                         displayDBAdminMenu();
@@ -2037,9 +2235,9 @@ public class WolfPubDB {
 
         public static void main(String[] args) {
 
-                System.out.println("***************************************************************");
-                System.out.println("Welcome to WolfaPubDB! Yes you read it right, we are WOLFAPACK!");
-                System.out.println("***************************************************************");
+                System.out.println("*********************");
+                System.out.println("Welcome to WolfPubDB!");
+                System.out.println("*********************");
                 initialize();
                 try {
                         displayMenu();
@@ -2048,4 +2246,103 @@ public class WolfPubDB {
                 }
                 close();
         }
+
+        public static void display_table(ResultSet resultSet) {
+                try {
+                        ResultSetMetaData rsmd = resultSet.getMetaData();
+                        int columnsNumber = rsmd.getColumnCount();
+                        String headers[] = new String[columnsNumber];
+
+                        for (int i = 0; i < columnsNumber; i++) {
+                                headers[i] = rsmd.getColumnName(i + 1);
+                        }
+                        setHeaders(headers);
+                        while (result.next()) {
+                                String data[] = new String[columnsNumber];
+                                for (int i = 0; i < columnsNumber; i++) {
+                                        String temp = result.getString(i + 1);
+                                        if (resultSet.wasNull()) {
+                                                data[i] = "NULL";
+                                        } else {
+                                                data[i] = temp;
+                                        }
+
+                                }
+                                addRow(data);
+                        }
+                        print();
+                        resetRows();
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+
+        }
+
+        public static void setRightAlign(boolean rightAlign1) {
+                rightAlign = rightAlign1;
+        }
+
+        public static void setHeaders(String... headers1) {
+                headers = headers1;
+        }
+
+        public static void addRow(String... cells) {
+                rows.add(cells);
+        }
+
+        public static void resetRows() {
+                rows.clear();
+        }
+
+        public static void print() {
+                int[] maxWidths = headers != null ? Arrays.stream(headers).mapToInt(String::length).toArray() : null;
+
+                for (String[] cells : rows) {
+                        if (maxWidths == null) {
+                                maxWidths = new int[cells.length];
+                        }
+                        if (cells.length != maxWidths.length) {
+                                throw new IllegalArgumentException(
+                                                "Number of row-cells and headers should be consistent");
+                        }
+                        for (int i = 0; i < cells.length; i++) {
+                                maxWidths[i] = Math.max(maxWidths[i], cells[i].length());
+                        }
+                }
+
+                if (headers != null) {
+                        printLine(maxWidths);
+                        printRow(headers, maxWidths);
+                        printLine(maxWidths);
+                }
+                for (String[] cells : rows) {
+                        printRow(cells, maxWidths);
+                }
+                if (headers != null) {
+                        printLine(maxWidths);
+                }
+        }
+
+        private static void printLine(int[] columnWidths) {
+                for (int i = 0; i < columnWidths.length; i++) {
+                        String line = String.join("", Collections.nCopies(columnWidths[i] +
+                                        verticalSep.length() + 1, HORIZONTAL_SEP));
+                        System.out.print(joinSep + line + (i == columnWidths.length - 1 ? joinSep : ""));
+                }
+                System.out.println();
+        }
+
+        private static void printRow(String[] cells, int[] maxWidths) {
+                for (int i = 0; i < cells.length; i++) {
+                        String s = cells[i];
+                        String verStrTemp = i == cells.length - 1 ? verticalSep : "";
+                        if (rightAlign) {
+                                System.out.printf("%s %" + maxWidths[i] + "s %s", verticalSep, s, verStrTemp);
+                        } else {
+                                System.out.printf("%s %-" + maxWidths[i] + "s %s", verticalSep, s, verStrTemp);
+                        }
+                }
+                System.out.println();
+        }
+
 }
