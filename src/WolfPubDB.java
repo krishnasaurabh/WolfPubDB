@@ -387,8 +387,8 @@ public class WolfPubDB {
                         query = "SELECT * FROM WritesArticles;";
                         showWritesArticles = connection.prepareStatement(query);
 
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -406,8 +406,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -425,8 +425,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -493,8 +493,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -515,8 +515,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -564,8 +564,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -586,8 +586,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -605,8 +605,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -647,8 +647,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -667,8 +667,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -703,8 +703,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -722,10 +722,9 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
-
         }
 
         public static void insertDistributor(int accountNumber, String phone, String city, String streetAddress,
@@ -749,8 +748,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -769,8 +768,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -790,8 +789,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -828,10 +827,9 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
-
         }
 
         public static void insertArticle(int publicationID, String title, String text, String creationDate) {
@@ -850,8 +848,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -870,10 +868,9 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
-
         }
 
         public static void updateArticle(int publicationID, String title, String option, String newValue) {
@@ -916,8 +913,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -935,8 +932,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -963,8 +960,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -1011,8 +1008,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -1030,8 +1027,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -1053,8 +1050,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -1088,8 +1085,8 @@ public class WolfPubDB {
                         } finally {
                                 connection.setAutoCommit(true);
                         }
-                } catch (SQLException e) {
-                        e.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
 
         }
@@ -1115,7 +1112,6 @@ public class WolfPubDB {
         public static void getNewBookInputs() {
                 try {
                         int publicationID = generatePublicationID();
-                        System.out.println(publicationID);
                         System.out.println("\n Enter the details of the Book");
                         System.out.println("\n Book Title:");
                         String title = scanner.nextLine();
@@ -1135,16 +1131,14 @@ public class WolfPubDB {
                         String publicationDate = scanner.nextLine();
                         insertPublication(publicationID, title, topic, type, price);
                         insertBook(publicationID, isbn, edition, publicationDate);
-                } catch (Throwable err) {
-                        System.out.println("caught");
-                        err.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
         public static void getNewPeriodicalInputs() {
                 try {
                         int publicationID = generatePublicationID();
-                        System.out.println(publicationID);
                         System.out.println("\n Enter the details of the Periodical");
                         System.out.println("\n Periodical Title :");
                         String title = scanner.nextLine();
@@ -1162,9 +1156,8 @@ public class WolfPubDB {
                         insertPublication(publicationID, title, topic, type, price);
                         insertPeriodical(publicationID, issueDate, periodicity);
 
-                } catch (Throwable err) {
-                        System.out.println("caught");
-                        err.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -1177,8 +1170,8 @@ public class WolfPubDB {
 
                         deleteBook(publicationID);
                         System.out.println("The Book is deleted successfully!");
-                } catch (Throwable err) {
-                        err.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -1191,8 +1184,8 @@ public class WolfPubDB {
 
                         deletePeriodical(publicationID);
                         System.out.println("The Periodical is deleted successfully!");
-                } catch (Throwable err) {
-                        err.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
         }
 
@@ -1403,6 +1396,7 @@ public class WolfPubDB {
                                         getNewArticleInputs();
                                         break;
                                 case "13":
+                                        updatePeriodicalMenu();
                                         break;
                                 case "14":
                                         break;
@@ -1670,7 +1664,6 @@ public class WolfPubDB {
                         while (result.next()) {
                                 publicationID = result.getInt("publication_ID");
                         }
-                        System.out.println(publicationID);
                 } catch (SQLException e) {
                         e.printStackTrace();
                 }
@@ -1715,6 +1708,99 @@ public class WolfPubDB {
                         }
                 }
 
+        }
+
+        public static void updatePeriodicalMenu() {
+                displayAllPeriodicals();
+                System.out.println("1.  update Periodical Issue Date (Date format YYYY-DD-MM).");
+                System.out.println("2.  update Periodical Periodicity");
+                System.out.println("3.  update the creation date of an article (Date format YYYY-DD-MM).");
+                System.out.println("4.  update the text of an Article");
+                System.out.println("5.  update an article title");
+                String option = scanner.next();
+                String value;
+                int publicationID;
+                try {
+                        connection.setAutoCommit(false);
+                        try {
+                                switch (option) {
+                                        case "1":
+                                                System.out.println("Enter publication ID of the Periodical:");
+                                                publicationID = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updatePeriodicalIssueDateQuery.setInt(2, publicationID);
+                                                System.out.println(
+                                                                "Enter updated Issue Date (Date format YYYY-DD-MM):");
+                                                value = scanner.nextLine();
+                                                updatePeriodicalIssueDateQuery.setString(1, value);
+                                                updatePeriodicalIssueDateQuery.executeUpdate();
+                                                break;
+                                        case "2":
+                                                System.out.println("Enter publication ID of the Periodical");
+                                                publicationID = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updatePeriodicalPeriodicityQuery.setInt(2, publicationID);
+                                                System.out.println("Enter the updated periodicity");
+                                                value = scanner.nextLine();
+                                                updatePeriodicalPeriodicityQuery.setString(1, value);
+                                                updatePeriodicalPeriodicityQuery.executeUpdate();
+                                                break;
+                                        case "3":
+                                                System.out.println("Enter publication ID of the Periodical");
+                                                publicationID = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updateArticleCreationDateQuery.setInt(2, publicationID);
+                                                System.out.println("Enter title of the Periodical:");
+                                                value = scanner.nextLine();
+                                                updateArticleCreationDateQuery.setString(3, value);
+                                                System.out.println(
+                                                                "Enter the updated creation date of the article (Date format YYYY-DD-MM):");
+                                                value = scanner.nextLine();
+                                                updateArticleCreationDateQuery.setString(1, value);
+                                                updateArticleCreationDateQuery.executeUpdate();
+                                                break;
+                                        case "4":
+                                                System.out.println("Enter publication ID of the Periodical");
+                                                publicationID = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updateArticleTextQuery.setInt(2, publicationID);
+                                                System.out.println("Enter title of the Article:");
+                                                value = scanner.nextLine();
+                                                updateArticleTextQuery.setString(3, value);
+                                                System.out.println("Enter the updated text of an Article:");
+                                                value = scanner.nextLine();
+                                                updateArticleTextQuery.setString(1, value);
+                                                updateArticleTextQuery.executeUpdate();
+                                                break;
+                                        case "5":
+                                                System.out.println("Enter publication ID of the Periodical");
+                                                publicationID = scanner.nextInt();
+                                                scanner.nextLine();
+                                                updateArticleTitleQuery.setInt(2, publicationID);
+                                                System.out.println("Enter title of the Article:");
+                                                value = scanner.next();
+                                                updateArticleTitleQuery.setString(3, value);
+                                                System.out.println("Enter the updated title of an Article:");
+                                                value = scanner.next();
+                                                updateArticleTitleQuery.setString(1, value);
+                                                updateArticleTitleQuery.executeUpdate();
+                                                break;
+                                        case "6":
+                                                return;
+                                        default:
+                                                System.out.println("Cannot perform the update operation");
+                                                break;
+                                }
+                                connection.commit();
+                        } catch (SQLException e) {
+                                connection.rollback();
+                                e.printStackTrace();
+                        } finally {
+                                connection.setAutoCommit(true);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
         }
 
         public static void displayMenu() throws SQLException {
