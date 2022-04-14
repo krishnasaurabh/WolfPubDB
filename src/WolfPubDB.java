@@ -32,13 +32,6 @@ public class WolfPubDB {
         private static List<String[]> rows = new ArrayList<>();
         private static boolean rightAlign;
 
-        private static final String HORIZONTAL_SEP = "-";
-        private static String verticalSep = "|";
-        private static String joinSep = " ";
-        private static String[] headers;
-        private static List<String[]> rows = new ArrayList<>();
-        private static boolean rightAlign;
-
         private static PreparedStatement editorAssignmentQuery;
         private static PreparedStatement editorUnAssignmentQuery;
 
@@ -465,7 +458,8 @@ public class WolfPubDB {
                         try {
                                 switch (option) {
                                         case "1":
-                                                updateDistributorAccountNumberQuery.setInt(1,Integer.parseInt(newValue));
+                                                updateDistributorAccountNumberQuery.setInt(1,
+                                                                Integer.parseInt(newValue));
                                                 updateDistributorAccountNumberQuery.setInt(2, account_number);
                                                 updateDistributorAccountNumberQuery.executeUpdate();
                                                 break;
@@ -639,7 +633,7 @@ public class WolfPubDB {
 
         }
 
-        public static void updateBookMenu(){
+        public static void updateBookMenu() {
                 System.out.println("1.  Update book edition");
                 System.out.println("2.  Update book ISBN");
                 System.out.println("3.  update the publication date of a book (Date format YYYY-DD-MM).");
@@ -727,8 +721,6 @@ public class WolfPubDB {
                 }
         }
 
-
-
         public static void insertPeriodical(int publicationID, String issueDate, String periodicity) {
                 try {
                         connection.setAutoCommit(false);
@@ -749,7 +741,6 @@ public class WolfPubDB {
                 }
 
         }
-
 
         public static void updatePeriodical(int publicationID, String option, String newValue) {
                 try {
@@ -1302,9 +1293,9 @@ public class WolfPubDB {
                 }
         }
 
-        public static void findByPID(int val){
+        public static void findByPID(int val) {
                 try {
-                        findBookByPublicationIdQuery.setInt(1,val);
+                        findBookByPublicationIdQuery.setInt(1, val);
                         result = findBookByPublicationIdQuery.executeQuery();
                         if (!result.next()) {
                                 System.out.println("No such books exist");
@@ -1318,7 +1309,6 @@ public class WolfPubDB {
                 }
 
         }
-
 
         public static void displayChaptersInBook(int publicationID) {
                 System.out.println("Chapters : ");
@@ -1339,9 +1329,9 @@ public class WolfPubDB {
 
         }
 
-        public static void findByISBN(int val){
+        public static void findByISBN(int val) {
                 try {
-                        findBookByISBNdQuery.setInt(1,val);
+                        findBookByISBNdQuery.setInt(1, val);
                         result = findBookByISBNdQuery.executeQuery();
                         if (!result.next()) {
                                 System.out.println("No such books exist");
@@ -1447,8 +1437,7 @@ public class WolfPubDB {
                 }
         }
 
-
-       public static void findBooks(){
+        public static void findBooks() {
                 System.out.println("1.  Find book by publication_ID");
                 System.out.println("2.  Find book by ISBN");
                 String response = scanner.next();
@@ -1475,46 +1464,46 @@ public class WolfPubDB {
                                 System.out.println("Please enter correct choice from above.");
                                 break;
                 }
-       }
-       public static void findPeriodicalByPID(int val){
-        try {
-                findPeriodicalByPIDQuery.setInt(1,val);
-                result = findPeriodicalByPIDQuery.executeQuery();
-                if (!result.next()) {
-                        System.out.println("No such books exist");
-                        return;
+        }
+
+        public static void findPeriodicalByPID(int val) {
+                try {
+                        findPeriodicalByPIDQuery.setInt(1, val);
+                        result = findPeriodicalByPIDQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such books exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
                 }
-                result.beforeFirst();
-                display_table(result);
-                System.out.println();
-        } catch (Exception e) {
-                System.out.println("Failure");
+
         }
 
-       }
-       public static void findPeriodicals(){
-        System.out.println("1.  Find periodical by publication_ID");
-        String response = scanner.next();
-        int val;
-        switch (response) {
-                case "1":
-                        System.out.println("Enter publication ID");
-                        val = scanner.nextInt();
-                        scanner.nextLine();
-                        findPeriodicalByPID(val);
-                        break;
-                case "2":
-                        return;
-                case "3":
-                        System.exit(0);
-                        break;
-                default:
-                        System.out.println("Please enter correct choice from above.");
-                        break;
+        public static void findPeriodicals() {
+                System.out.println("1.  Find periodical by publication_ID");
+                String response = scanner.next();
+                int val;
+                switch (response) {
+                        case "1":
+                                System.out.println("Enter publication ID");
+                                val = scanner.nextInt();
+                                scanner.nextLine();
+                                findPeriodicalByPID(val);
+                                break;
+                        case "2":
+                                return;
+                        case "3":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Please enter correct choice from above.");
+                                break;
+                }
         }
-}
-
-
 
         public static void displayPublicationsMenu() {
                 while (true) {
@@ -1609,7 +1598,7 @@ public class WolfPubDB {
 
         }
 
-        public static void updateDistributorInputs(){
+        public static void updateDistributorInputs() {
                 clearConsoleScreen();
                 int account_number;
                 String value;
@@ -1694,10 +1683,9 @@ public class WolfPubDB {
 
                 }
 
-
         }
 
-        public static void addDistributorInputs(){
+        public static void addDistributorInputs() {
                 int account_number;
                 String phone;
                 String city;
@@ -1725,7 +1713,7 @@ public class WolfPubDB {
                 insertDistributor(account_number, phone, city, street_address, type, name, balance, contact_person);
         }
 
-        public static void insertDistributorPayment(int account_number, String payment_date, int amount_paid){
+        public static void insertDistributorPayment(int account_number, String payment_date, int amount_paid) {
                 try {
                         connection.setAutoCommit(false);
                         try {
@@ -1744,30 +1732,30 @@ public class WolfPubDB {
                         e.printStackTrace();
                 }
 
-
-
         }
 
-        public static void deleteDistributorInputs(){
+        public static void deleteDistributorInputs() {
                 System.out.println("Enter distributor account number");
                 int value = scanner.nextInt();
                 deleteDistributor(value);
         }
 
-        public static void placeOrder(int order_number, int pid, int account_number, String order_date, String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost){
-                insertOrder(order_number, pid,account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+        public static void placeOrder(int order_number, int pid, int account_number, String order_date,
+                        String order_delivery_date, int number_of_copies, double total_cost, double shipping_cost) {
+                insertOrder(order_number, pid, account_number, order_date, order_delivery_date, number_of_copies,
+                                total_cost, shipping_cost);
         }
 
-        public static void placeOrderInputs(){
+        public static void placeOrderInputs() {
                 int oid = 0;
-                try{
+                try {
                         result = getOrderID.executeQuery();
                         result.beforeFirst();
                         System.out.println(result);
-                        while(result.next()){
-                        oid = result.getInt("order_number");
-                }
-                }catch(Exception e){
+                        while (result.next()) {
+                                oid = result.getInt("order_number");
+                        }
+                } catch (Exception e) {
                         System.out.println("exception");
                 }
 
@@ -1786,23 +1774,24 @@ public class WolfPubDB {
                 double total_cost = scanner.nextDouble();
                 System.out.println("Enter shipping cost");
                 double shipping_cost = scanner.nextDouble();
-                placeOrder(oid+1, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost, shipping_cost);
+                placeOrder(oid + 1, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost,
+                                shipping_cost);
 
         }
 
-        public static void generateBill(){
+        public static void generateBill() {
                 System.out.println("Enter order number");
                 int order_number = scanner.nextInt();
-                try{
-                        generateBillQuery.setInt(1,order_number);
+                try {
+                        generateBillQuery.setInt(1, order_number);
                         generateBillQuery.executeUpdate();
-                }catch(SQLException e){
+                } catch (SQLException e) {
                         System.out.println("update failed");
                 }
 
         }
 
-        public static void deduceBalance(int account_number, String payment_date){
+        public static void deduceBalance(int account_number, String payment_date) {
                 try {
                         connection.setAutoCommit(false);
                         try {
@@ -1812,8 +1801,7 @@ public class WolfPubDB {
                                 deduceBalanceQuery.executeUpdate();
                                 connection.commit();
 
-
-                                }catch (SQLException e) {
+                        } catch (SQLException e) {
                                 connection.rollback();
                                 e.printStackTrace();
                         } finally {
@@ -1825,8 +1813,7 @@ public class WolfPubDB {
 
         }
 
-
-        public static void receivePayment(){
+        public static void receivePayment() {
                 System.out.println("Enter account number of the distributor");
                 int account_number = scanner.nextInt();
                 System.out.println("Enter payment date in the format YYYY-DD-MM");
@@ -1836,8 +1823,6 @@ public class WolfPubDB {
 
                 insertDistributorPayment(account_number, payment_date, amount_paid);
                 deduceBalance(account_number, payment_date);
-
-
 
         }
 
@@ -2892,7 +2877,7 @@ public class WolfPubDB {
 
         private static void connectToDatabase() throws ClassNotFoundException, SQLException {
                 Class.forName("org.mariadb.jdbc.Driver");
-                //generateDDLAndDMLStatements();
+                // generateDDLAndDMLStatements();
                 // String user = "kvankad";
                 // String password = "Builder!12";
                 String user = "sthota";
