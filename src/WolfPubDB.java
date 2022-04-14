@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
+import java.sql.Types;
 
 public class WolfPubDB {
         static final String jdbcURL = "jdbc:mariadb://classdb2.csc.ncsu.edu:3306/sthota";
@@ -246,16 +247,16 @@ public class WolfPubDB {
                         query = "DELETE FROM `Orders`" + " WHERE `order_number` = ?;";
                         deleteOrderQuery = connection.prepareStatement(query);
 
-                        query = "INSERT INTO `Payment` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
+                        query = "INSERT INTO `Payments` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
                         insertPaymentQuery = connection.prepareStatement(query);
-                        query = "UPDATE `Payment`"
+                        query = "UPDATE `Payments`"
                                         + " SET `payment_amount` = ? WHERE staff_ID = ? AND salary_date = ?;";
-                        query = "UPDATE `Payment`" + " SET `payment_amount` = ? WHERE order_number = ?;";
+                        query = "UPDATE `Payments`" + " SET `payment_amount` = ? WHERE order_number = ?;";
                         updatePaymentAmountQuery = connection.prepareStatement(query);
-                        query = "UPDATE `Payment`"
+                        query = "UPDATE `Payments`"
                                         + " SET `collection_date` = ? WHERE staff_ID = ? AND salary_date = ?;";
                         updatePaymentCollectionDateQuery = connection.prepareStatement(query);
-                        query = "DELETE FROM `Payment`" + " WHERE `staff_ID` = ? AND salary_date = ?;";
+                        query = "DELETE FROM `Payments`" + " WHERE `staff_ID` = ? AND salary_date = ?;";
 
                         deletePaymentQuery = connection.prepareStatement(query);
 
@@ -1088,19 +1089,23 @@ public class WolfPubDB {
                 } catch (SQLException e) {
                         e.printStackTrace();
                 }
-
         }
 
-        public static void insertPayment(int staff_ID, String salary_date, double payment_amount,
+        public static void insertPayment_sql(int staff_ID, String salary_date, double payment_amount,
                         String collection_date) {
                 try {
                         connection.setAutoCommit(false);
                         try {
                                 insertPaymentQuery.setInt(1, staff_ID);
-                                insertOrderQuery.setString(2, salary_date);
-                                insertOrderQuery.setDouble(3, payment_amount);
-                                insertOrderQuery.setString(4, collection_date);
-                                insertOrderQuery.executeUpdate();
+                                insertPaymentQuery.setString(2, salary_date);
+                                insertPaymentQuery.setDouble(3, payment_amount);
+                                if (collection_date.length() == 0)
+                                {
+                                        insertPaymentQuery.setNull(4, Types.NULL);
+                                }else{
+                                        insertPaymentQuery.setString(4, collection_date);
+                                }
+                                insertPaymentQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -1113,28 +1118,34 @@ public class WolfPubDB {
                 }
         }
 
-        public static void updatePayment(String option, String newValue, int staff_ID, String salary_date) {
+        public static void insertPayment() {
+                try {
+                        System.out.print("\n Enter the details of the Payment to staff\n");
+                        System.out.print("\n Staff ID\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Enter Date the salary was posted (YYYY-MM-DD)\n");
+                        String salary_date = scanner.nextLine();
+                        System.out.print("\n Enter payment amount \n");
+                        Double payment_amount = scanner.nextDouble();
+                        scanner.nextLine();
+                        System.out.print("\n Enter Date the salary was collected (press enter if unknown) (YYYY-MM-DD)\n");
+                        String collection_date = scanner.nextLine();
+                        insertPayment_sql(staff_ID, salary_date, payment_amount, collection_date);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
+        }
+
+        public static void updateCollectionDateOfPayment_sql(String collection_date, int staff_ID,
+                        String salary_date) {
                 try {
                         connection.setAutoCommit(false);
                         try {
-                                switch (option) {
-
-                                        case "1":
-                                                updatePaymentAmountQuery.setDouble(1, Double.parseDouble(newValue));
-                                                updatePaymentAmountQuery.setInt(2, staff_ID);
-                                                updatePaymentAmountQuery.setString(2, salary_date);
-                                                updatePaymentAmountQuery.executeUpdate();
-                                                break;
-                                        case "2":
-                                                updatePaymentCollectionDateQuery.setString(1, newValue);
-                                                updatePaymentCollectionDateQuery.setInt(2, staff_ID);
-                                                updatePaymentCollectionDateQuery.setString(2, salary_date);
-                                                updatePaymentCollectionDateQuery.executeUpdate();
-                                                break;
-                                        default:
-                                                System.out.println("Cannot perform the update operation");
-                                                break;
-                                }
+                                updatePaymentCollectionDateQuery.setString(1, collection_date);
+                                updatePaymentCollectionDateQuery.setInt(2, staff_ID);
+                                updatePaymentCollectionDateQuery.setString(2, salary_date);
+                                updatePaymentCollectionDateQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -1145,7 +1156,22 @@ public class WolfPubDB {
                 } catch (SQLException e) {
                         e.printStackTrace();
                 }
+        }
 
+        public static void updateCollectionDateOfPayment() {
+                try {
+                        System.out.print("\n Enter the details of the Payment to staff to be updated\n");
+                        System.out.print("\n Staff ID\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("\n Enter the Date the salary was posted (YYYY-MM-DD)\n");
+                        String salary_date = scanner.nextLine();
+                        System.out.print("\n Enter the Date the salary was collected to be updated (YYYY-MM-DD)\n");
+                        String collection_date = scanner.nextLine();
+                        updateCollectionDateOfPayment_sql(collection_date, staff_ID, salary_date);
+                } catch (Throwable err) {
+                        err.printStackTrace();
+                }
         }
 
         public static void clearConsoleScreen() {
@@ -1607,8 +1633,7 @@ public class WolfPubDB {
 
         public static void showAuthorByID() {
                 try {
-                        System.out.print(
-                                        "\n Enter the ID of Author\n");
+
                         System.out.print("\n Staff ID of the Author\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
@@ -1622,8 +1647,7 @@ public class WolfPubDB {
 
         public static void showEditorByID() {
                 try {
-                        System.out.print(
-                                        "\n Enter the ID of Editor\n");
+
                         System.out.print("\n Staff ID of the Editor\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
@@ -1637,8 +1661,7 @@ public class WolfPubDB {
 
         public static ResultSet findPublicationByEditor() {
                 try {
-                        System.out.print(
-                                        "\n Enter the ID of Editor\n");
+
                         System.out.print("\n Staff ID of the Editor\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
@@ -1659,8 +1682,7 @@ public class WolfPubDB {
 
         public static ResultSet findBookByAuthor() {
                 try {
-                        System.out.print(
-                                        "\n Enter the ID of Author\n");
+
                         System.out.print("\n Staff ID of the Author\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
@@ -1681,8 +1703,7 @@ public class WolfPubDB {
 
         public static ResultSet findArticleByAuthor() {
                 try {
-                        System.out.print(
-                                        "\n Enter the ID of Author\n");
+
                         System.out.print("\n Staff ID of the Author\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
@@ -1966,7 +1987,7 @@ public class WolfPubDB {
                         System.out.println("16. Find Author by ID");
                         System.out.println("17. Show all Authors");
                         System.out.println("18. Find Book by Author");
-                        System.out.println("19. Find Brticle by Author");
+                        System.out.println("19. Find Article by Author");
                         System.out.println("---------------Staff Payment---------------");
                         System.out.println("20. Enter payment for Staff");
                         System.out.println("21. Update Date of collection of payment for Staff");
@@ -2035,10 +2056,10 @@ public class WolfPubDB {
                                         findArticleByAuthor();
                                         break;
                                 case "20":
-                                        findBookByAuthor();
+                                        insertPayment();
                                         break;
                                 case "21":
-                                        findArticleByAuthor();
+                                        updateCollectionDateOfPayment();
                                         break;
                                 case "22":
                                         return;
