@@ -123,6 +123,9 @@ public class WolfPubDB {
         private static PreparedStatement showArticles;
         private static PreparedStatement showWritesBooks;
         private static PreparedStatement showWritesArticles;
+        private static PreparedStatement findBookByPublicationIdQuery;
+        private static PreparedStatement findBookByISBNdQuery;
+        private static PreparedStatement findPeriodicalByPIDQuery;
 
         public static void generateDDLAndDMLStatements(Connection connection) {
                 String query;
@@ -155,6 +158,10 @@ public class WolfPubDB {
                         updateBookPublicationDateQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Publications`" + " WHERE `publication_date` = ?;";
                         deleteBookQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM `Books`WHERE `publication_ID` = ?;";
+                        findBookByPublicationIdQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM `Books` WHERE `ISBN` = ?;";
+                        findBookByISBNdQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Chapters` (`publication_ID`, `title`, `text`) VALUES (?, ?, ?);";
                         insertChapterQuery = connection.prepareStatement(query);
@@ -173,6 +180,8 @@ public class WolfPubDB {
                         updatePeriodicalPeriodicityQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
                         deletePeriodicalQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM Periodicals WHERE publication_ID=?;";
+                        findPeriodicalByPIDQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `DistributorPayments` (`account_number`, `payment_date`, `amount_paid`) VALUES (?, ?, ?);";
                         insertDistributorPaymentQuery = connection.prepareStatement(query);
@@ -1176,8 +1185,107 @@ public class WolfPubDB {
                 e.printStackTrace();
                 }
         }
-
         
+        public static void findByPID(int val){
+                try {
+                        findBookByPublicationIdQuery.setInt(1,val);
+                        result = findBookByPublicationIdQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such books exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+
+        }
+
+        public static void findByISBN(int val){
+                try {
+                        findBookByISBNdQuery.setInt(1,val);
+                        result = findBookByISBNdQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such books exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                } 
+                
+        }
+       public static void findBooks(){
+                System.out.println("1.  Find book by publication_ID");
+                System.out.println("2.  Find book by ISBN");
+                String response = scanner.next();
+                int val;
+                switch (response) {
+                        case "1":
+                                System.out.println("Enter publication ID");
+                                val = scanner.nextInt();
+                                scanner.nextLine();
+                                findByPID(val);
+                                break;
+                        case "2":
+                                System.out.println("Enter ISBN value");
+                                val = scanner.nextInt();
+                                scanner.nextLine();
+                                findByISBN(val);
+                                break;
+                        case "3":
+                                return;
+                        case "4":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Please enter correct choice from above.");
+                                break;
+                }
+       } 
+       public static void findPeriodicalByPID(int val){
+        try {
+                findPeriodicalByPIDQuery.setInt(1,val);
+                result = findPeriodicalByPIDQuery.executeQuery();
+                if (!result.next()) {
+                        System.out.println("No such books exist");
+                        return;
+                }
+                result.beforeFirst();
+                display_table(result);
+                System.out.println();
+        } catch (Exception e) {
+                System.out.println("Failure");
+        } 
+
+       }
+       public static void findPeriodicals(){
+        System.out.println("1.  Find periodical by publication_ID");
+        String response = scanner.next();
+        int val;
+        switch (response) {
+                case "1":
+                        System.out.println("Enter publication ID");
+                        val = scanner.nextInt();
+                        scanner.nextLine();
+                        findPeriodicalByPID(val);
+                        break;
+                case "2":
+                        return;
+                case "3":
+                        System.exit(0);
+                        break;
+                default:
+                        System.out.println("Please enter correct choice from above.");
+                        break;
+        }
+} 
+
+
 
         public static void displayPublicationsMenu() {
                 while (true) {
@@ -1215,8 +1323,10 @@ public class WolfPubDB {
                                         updateBookMenu();
                                         break;
                                 case "3":
+                                        findBooks();
                                         break;
                                 case "4":
+                                        findPeriodicals();
                                         break;
                                 case "19":
                                         return;
