@@ -156,7 +156,7 @@ public class WolfPubDB {
                         updateBookEditionQuery = connection.prepareStatement(query);
                         query = "UPDATE `Books`" + " SET `publication_date` = ? WHERE `publication_ID`= ?;";
                         updateBookPublicationDateQuery = connection.prepareStatement(query);
-                        query = "DELETE FROM `Publications`" + " WHERE `publication_date` = ?;";
+                        query = "DELETE FROM `Publications`" + " WHERE `publication_ID` = ?;";
                         deleteBookQuery = connection.prepareStatement(query);
                         query = "SELECT * FROM `Books`WHERE `publication_ID` = ?;";
                         findBookByPublicationIdQuery = connection.prepareStatement(query);
@@ -575,10 +575,37 @@ public class WolfPubDB {
 
         }
 
+        public static void insertBookMenu(){
+                System.out.println("Enter publicationID");
+                int pid = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Enter ISBN");
+                int isbn = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Enter book edition");
+                int edition = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Enter publication date in the format YYYY-DD-MM");
+                String publication_date = scanner.nextLine();
+                System.out.println("Enter title");
+                String title = scanner.nextLine();
+                System.out.println("Enter boook price in double format");
+                double price = scanner.nextDouble();
+                scanner.nextLine();
+                System.out.println("Enter topic");
+                String topic = scanner.nextLine();
+                System.out.println("Enter type");
+                String type = scanner.nextLine();
+
+                insertPublication(pid, title, topic, type, price);
+                insertBook(pid,isbn,edition, publication_date); 
+        }
+
         public static void insertBook(int publicationID, int isbn, int edition, String publicationDate) {
                 try {
                         connection.setAutoCommit(false);
                         try {
+
                                 insertBookQuery.setInt(1, publicationID);
                                 insertBookQuery.setInt(2, isbn);
                                 insertBookQuery.setInt(3, edition);
@@ -727,6 +754,7 @@ public class WolfPubDB {
 
         }
 
+        
 
         public static void updatePeriodical(int publicationID, String option, String newValue) {
                 try {
@@ -768,8 +796,8 @@ public class WolfPubDB {
                 try {
                         connection.setAutoCommit(false);
                         try {
-                                insertPeriodicalQuery.setInt(1, publicationID);
-                                insertPeriodicalQuery.executeUpdate();
+                                deletePeriodicalQuery.setInt(1, publicationID);
+                                deletePeriodicalQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -930,7 +958,58 @@ public class WolfPubDB {
                 }
 
         }
+        public static void updateArticleMenu(){
+                String title,text, creation_date, val;
+                int pid;
+                System.out.println("1. Update article title");
+                System.out.println("2. Update article text");
+                System.out.println("3. Update article creation date");
+                String option = scanner.next();
+                scanner.nextLine();
+                switch(option){
+                        case "1":
+                                System.out.println("Enter new article title");
+                                val = scanner.nextLine();
+                                System.out.println("Enter article publication ID");
+                                pid = scanner.nextInt();
+                                scanner.nextLine();
+                                System.out.println("Enter article title");
+                                title = scanner.nextLine();
+                                updateArticle(pid, title, "1",val); 
+                                break;
+                        case "2":
+                                System.out.println("Enter updated article text");
+                                val = scanner.nextLine();
+                                System.out.println("Enter article publication ID");
+                                pid = scanner.nextInt();
+                                scanner.nextLine();
+                                System.out.println("Enter article title");
+                                title = scanner.nextLine();
+                                updateArticle(pid, title, "2",val); 
+                                break;
+                        case "3":
+                                System.out.println("Enter creation date in YYYY-DD-MM");
+                                val = scanner.nextLine();
+                                System.out.println("Enter article publication ID");
+                                pid = scanner.nextInt();
+                                scanner.nextLine();
+                                System.out.println("Enter article title");
+                                title = scanner.nextLine();
+                                updateArticle(pid, title, "3",val); 
+                                break;
+                        case "4":
+                                return;
+                        case "5":
+                                System.exit(0);
+                                break;
+                        default:
+                                System.out.println("Cannot perform the update operation");
+                                break;
 
+                }
+
+
+        }
         public static void updateArticle(int publicationID, String title, String option, String newValue) {
                 try {
                         connection.setAutoCommit(false);
@@ -1284,40 +1363,59 @@ public class WolfPubDB {
                         break;
         }
 } 
+        
 
+        public static void insertPeriodicalMenu(){
+                System.out.println("Enter publication ID");
+                int publicationID = scanner.nextInt();
+                scanner.nextLine();
+                System.out.println("Enter issue date");
+                String issue_date = scanner.nextLine();
+                System.out.println("Enter the title");
+                String title = scanner.nextLine();
+                System.out.println("Enter the type");
+                String type = scanner.nextLine();
+                System.out.println("Enter periodicity (weekly, monthly etc)");
+                String periodicity = scanner.nextLine();
+                System.out.println("Enter the price of the periodical");
+                Double price = scanner.nextDouble();
+                scanner.nextLine();
+                System.out.println("Enter the topic");
+                String topic = scanner.nextLine();
+                
+
+                insertPublication(publicationID, title, topic, type, price);
+                insertPeriodical(publicationID, issue_date, periodicity);
+
+        }
 
 
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
+                        int publicationID;
+                        String issue_date, periodicity, title, text, creationDate;
                         System.out.println("\nPublications Menu\n");
                         System.out.println("---------------BOOKS---------------");
                         System.out.println("1.  Add a new book edition");
-                        System.out.println("2.  Update book/chapter details");
-                        System.out.println("3.  Delete book edition ");
-                        System.out.println("4.  Add a chapter to a Book");
-                        System.out.println("5.  Update a chapter of a Book");
-                        System.out.println("6.  Update the title of a chapter");
-                        System.out.println("7.  Find books");
-                        System.out.println("8.  Show all Books");
-                        System.out.println("9.  Show all chapters for a Book");
+                        System.out.println("2.  Update Book/Chapter");
+                        System.out.println("3.  Find books");
+                        System.out.println("4.  Delete a book");
                         System.out.println("---------------PERIODICALS---------------");
-                        System.out.println("10.  Add new Periodical");
-                        System.out.println("11. Delete Periodical");
-                        System.out.println("12. Add an article to a Periodical");
-                        System.out.println("13. Update the article title of a Periodical");
-                        System.out.println("15. Update text of an article");
-                        System.out.println("16. Find articles");
-                        System.out.println("17. Show all periodicals");
-                        System.out.println("18. Show all articles for a periodical");
+                        System.out.println("5.  Add new Periodical");
+                        System.out.println("6.  Find a periodical");
+                        System.out.println("7.  Delete a periodical");
+                        System.out.println("8.  Insert an article");
+                        System.out.println("9. Update article");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("19. Go back to previous Menu");
-                        System.out.println("20. Exit");
+                        System.out.println("10. Go back to previous Menu");
+                        System.out.println("11. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
+                                        insertBookMenu();
                                         break;
                                 case "2":
                                         updateBookMenu();
@@ -1326,11 +1424,41 @@ public class WolfPubDB {
                                         findBooks();
                                         break;
                                 case "4":
+                                        System.out.println("Enter publication ID");
+                                        publicationID = scanner.nextInt();
+                                        scanner.nextLine();
+                                        deleteBook(publicationID);;
+                                        break;
+                                case "5":
+                                        insertPeriodicalMenu();
+                                        break;
+                                case "6":
                                         findPeriodicals();
                                         break;
-                                case "19":
+                                case "7":
+                                        System.out.println("Enter publication ID");
+                                        publicationID = scanner.nextInt();
+                                        scanner.nextLine();
+                                        deletePeriodical(publicationID);
+                                        break;
+                                case "8":
+                                        System.out.println("Enter publication ID");
+                                        publicationID = scanner.nextInt();
+                                        scanner.nextLine();
+                                        System.out.println("Enter the title of the article");
+                                        title = scanner.nextLine();
+                                        System.out.println("Enter the text of the article");
+                                        text = scanner.nextLine();
+                                        System.out.println("Enter the creation date of the article");
+                                        creationDate = scanner.nextLine();
+                                        insertArticle(publicationID, title, text, creationDate);
+                                        break;
+                                case "9":
+                                        updateArticleMenu(); 
+                                        break;
+                                case "10":
                                         return;
-                                case "20":
+                                case "11":
                                         System.exit(0);
                                         break;
                                 default:
@@ -2464,6 +2592,21 @@ public class WolfPubDB {
         private static void initialize() {
                 try {
                         connectToDatabase();
+
+                        Runtime.getRuntime().addShutdownHook(new Thread() {
+                                public void run() {
+                                        try {
+                                                Thread.sleep(200);
+                                                System.out.println("\nShutting down ...");
+                                                close();
+                                        } catch (InterruptedException e) {
+                                                Thread.currentThread().interrupt();
+                                                e.printStackTrace();
+                                        }
+                                }
+                        });
+
+                        generateDDLAndDMLStatements(connection);
                         System.out.println("Connection to WolfPubDB is successfull.");
                         scanner = new Scanner(System.in);
                 } catch (ClassNotFoundException e) {
@@ -2488,6 +2631,7 @@ public class WolfPubDB {
         }
 
         private static void close() {
+                System.out.println("Closing all connections....");
                 if (connection != null) {
                         try {
                                 connection.close();
