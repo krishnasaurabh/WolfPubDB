@@ -672,20 +672,29 @@ public class WolfPubDB {
                 System.out.println("Enter type");
                 String type = scanner.nextLine();
 
-                insertPublication(pid, title, topic, type, price);
-                insertBook(pid,isbn,edition, publication_date); 
+                insertBook(pid,  title, topic, type, price, isbn,edition, publication_date); 
         }
 
-        public static void insertBook(int publicationID, int isbn, int edition, String publicationDate) {
+        public static void insertBook(int publicationID, String title, String topic, String type, Double price, int isbn, int edition, String publicationDate) {
                 try {
                         connection.setAutoCommit(false);
                         try {
+                                // first we insert a publication table
+                                insertPublicationQuery.setInt(1, publicationID);
+                                insertPublicationQuery.setString(2, title);
+                                insertPublicationQuery.setString(3, topic);
+                                insertPublicationQuery.setString(4, type);
+                                insertPublicationQuery.setDouble(5, price);
+                                insertPublicationQuery.executeUpdate();
 
+                                // then we insert into books table
                                 insertBookQuery.setInt(1, publicationID);
                                 insertBookQuery.setInt(2, isbn);
                                 insertBookQuery.setInt(3, edition);
                                 insertBookQuery.setString(4, publicationDate);
                                 insertBookQuery.executeUpdate();
+
+                                // we commit the transaction, if and only if both insertions are successful
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -808,10 +817,19 @@ public class WolfPubDB {
 
         
 
-        public static void insertPeriodical(int publicationID, String issueDate, String periodicity) {
+        public static void insertPeriodical(int publicationID, String title, String topic, String type, Double price, String issueDate, String periodicity) {
                 try {
                         connection.setAutoCommit(false);
                         try {
+                                // first insert into publication 
+                                insertPublicationQuery.setInt(1, publicationID);
+                                insertPublicationQuery.setString(2, title);
+                                insertPublicationQuery.setString(3, topic);
+                                insertPublicationQuery.setString(4, type);
+                                insertPublicationQuery.setDouble(5, price);
+                                insertPublicationQuery.executeUpdate();
+
+                                // then insert into periodical
                                 insertPeriodicalQuery.setInt(1, publicationID);
                                 insertPeriodicalQuery.setString(2, issueDate);
                                 insertPeriodicalQuery.setString(3, periodicity);
@@ -1165,6 +1183,12 @@ public class WolfPubDB {
                                 insertOrderQuery.setDouble(7, total_cost);
                                 insertOrderQuery.setDouble(8, shipping_cost);
                                 insertOrderQuery.executeUpdate();
+                                
+                                // Once each order is successfully placed, we need to generate the bill
+                                // as the outstanding balance gets updated each time an order is placed
+                                generateBillQuery.setInt(1,order_number);
+                                generateBillQuery.executeUpdate();
+
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
@@ -2023,8 +2047,8 @@ public class WolfPubDB {
                 String topic = scanner.nextLine();
                 
 
-                insertPublication(publicationID, title, topic, type, price);
-                insertPeriodical(publicationID, issue_date, periodicity);
+                //insertPublication(publicationID, title, topic, type, price);
+                insertPeriodical(publicationID, title, topic, type, price, issue_date, periodicity);
 
         }
 
