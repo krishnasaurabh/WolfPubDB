@@ -2935,6 +2935,20 @@ public class WolfPubDB {
         private static void initialize() {
                 try {
                         connectToDatabase();
+
+                        Runtime.getRuntime().addShutdownHook(new Thread() {
+                                public void run() {
+                                        try {
+                                                Thread.sleep(200);
+                                                System.out.println("\nShutting down ...");
+                                                close();
+                                        } catch (InterruptedException e) {
+                                                Thread.currentThread().interrupt();
+                                                e.printStackTrace();
+                                        }
+                                }
+                        });
+
                         generateDDLAndDMLStatements();
                         System.out.println("Connection to WolfPubDB is successfull.");
                         scanner = new Scanner(System.in);
@@ -2959,6 +2973,7 @@ public class WolfPubDB {
         }
 
         private static void close() {
+                System.out.println("Closing all connections....");
                 if (connection != null) {
                         try {
                                 connection.close();
