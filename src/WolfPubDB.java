@@ -81,6 +81,9 @@ public class WolfPubDB {
         private static PreparedStatement deleteDistributorQuery;
         private static PreparedStatement generateBillQuery;
         private static PreparedStatement deduceBalanceQuery;
+        private static PreparedStatement showOrdersDistributorQuery;
+        private static PreparedStatement showDistributorBalanceQuery;
+        private static PreparedStatement showDistributorPaymentsQuery;
 
         private static PreparedStatement insertOrderQuery;
         private static PreparedStatement updateOrderDateQuery;
@@ -252,6 +255,14 @@ public class WolfPubDB {
                         generateBillQuery = connection.prepareStatement(query);
                         query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
                         deduceBalanceQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM `Orders` WHERE distributor_account_no = ?;";
+                        showOrdersDistributorQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM `Distributors` WHERE account_number=?;";
+                        showDistributorBalanceQuery = connection.prepareStatement(query);
+                        query = "SELECT * FROM `DistributorPayments` WHERE account_number=?;";
+                        showDistributorPaymentsQuery = connection.prepareStatement(query);
+
+
 
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
@@ -816,7 +827,7 @@ public class WolfPubDB {
                 }
         }
 
-        public static void insertPeriodical(int publicationID, String issueDate, String periodicity) {
+        public static void insertPeriodical(int publicationID, String title,  String topic,String type, Double price, String issue_date,String periodicity) {
                 try {
                         connection.setAutoCommit(false);
                         try {
@@ -830,7 +841,7 @@ public class WolfPubDB {
 
                                 // then insert into periodical
                                 insertPeriodicalQuery.setInt(1, publicationID);
-                                insertPeriodicalQuery.setString(2, issueDate);
+                                insertPeriodicalQuery.setString(2,issue_date);
                                 insertPeriodicalQuery.setString(3, periodicity);
                                 insertPeriodicalQuery.executeUpdate();
                                 connection.commit();
@@ -2794,44 +2805,112 @@ public class WolfPubDB {
                 }
         }
 
+        public static void showOrdersDistributor(){
+                int account_number; 
+                System.out.println("Enter the account number");
+                account_number = scanner.nextInt();
+                try {
+                        showOrdersDistributorQuery.setInt(1, account_number);
+                        result = showOrdersDistributorQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such orders exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+
+        }
+
+        public static void showDistributorBalance(){
+                int account_number; 
+                System.out.println("Enter the account number");
+                account_number = scanner.nextInt();
+                try {
+                        showDistributorBalanceQuery.setInt(1, account_number);
+                        result = showDistributorBalanceQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No distributor exists with the given account number");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
+        public static void showDistributorPayments(){
+                int account_number; 
+                System.out.println("Enter the account number");
+                account_number = scanner.nextInt();
+                try {
+                        showDistributorPaymentsQuery.setInt(1, account_number);
+                        result = showDistributorPaymentsQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No such payments exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
+
+
         public static void displayDistributorsMenu() {
                 while (true) {
                         clearConsoleScreen();
                         System.out.println("\nDistributors Menu\n");
                         System.out.println("---------------Distributors Menu---------------");
-                        System.out.println("4.  Place an order");
-                        System.out.println("5.  Show All orders for distributor");
-                        System.out.println("15. Show balance for distributor account");
-                        System.out.println("15. Make payment to distributor account");
-                        System.out.println("22. Show payments to distributor account");
+                        System.out.println("1. Place an order");
+                        System.out.println("2. Show All orders for distributor");
+                        System.out.println("3. Show balance for distributor account");
+                        System.out.println("4. Make payment to distributor account");
+                        System.out.println("5. Show payments to distributor account");
                         System.out.println("---------------Publications Menu---------------");
-                        System.out.println("6.  Find books");
-                        System.out.println("16. Find articles");
-                        System.out.println("7.  Show all Books");
-                        System.out.println("17. Show all periodicals");
-                        System.out.println("18. Show all articles for a periodical");
+                        System.out.println("6. Find books");
+                        System.out.println("7. Find articles");
+                        System.out.println("8. Show all Books");
+                        System.out.println("9. Show all periodicals");
+                        System.out.println("10. Show all articles for a periodical");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("23. Go back to previous Menu");
-                        System.out.println("24. Exit");
+                        System.out.println("11. Go back to previous Menu");
+                        System.out.println("12. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
-                                        addEditor();
+                                        placeOrderInputs();
                                         break;
                                 case "2":
-                                        updateStaff();
+                                        showOrdersDistributor();
                                         break;
                                 case "3":
-                                        deleteStaff();
+                                        showDistributorBalance();
                                         break;
                                 case "4":
-                                        addEdits();
+                                        receivePayment();
                                         break;
                                 case "5":
-                                        deleteEdits();
+                                        showDistributorPayments();
                                         break;
+                                case "6":
+                                        findBooks();
+                                        break;
+                                case "7":
+                                        
+                                        break;
+                                
+
                                 case "23":
                                         return;
                                 case "24":
