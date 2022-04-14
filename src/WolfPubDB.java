@@ -141,6 +141,7 @@ public class WolfPubDB {
         private static PreparedStatement findPublicationByEditorQuery;
         private static PreparedStatement findBookByAuthorQuery;
         private static PreparedStatement findArticleByAuthorQuery;
+        private static PreparedStatement showPaymentsForStaff;
 
         public static void generateDDLAndDMLStatements() {
                 String query;
@@ -340,11 +341,11 @@ public class WolfPubDB {
                         query = "SELECT COUNT(account_number) AS total_distributors FROM Distributors;";
                         currentTotalDistributorsReportQuery = connection.prepareStatement(query);
 
-                    query = "SELECT city AS distributor_city, sum(amount_paid) as revenue " +
-                            "FROM "+
-                            "Distributors D NATURAL JOIN DistributorPayments DP "+
-                            "GROUP BY city;";
-                    totalRevenuePerCityReportQuery = connection.prepareStatement(query);
+                        query = "SELECT city AS distributor_city, sum(amount_paid) as revenue " +
+                                        "FROM " +
+                                        "Distributors D NATURAL JOIN DistributorPayments DP " +
+                                        "GROUP BY city;";
+                        totalRevenuePerCityReportQuery = connection.prepareStatement(query);
 
                         query = "  SELECT   " +
                                         "  account_number AS distributor_account_no,   " +
@@ -442,10 +443,14 @@ public class WolfPubDB {
                         query = "SELECT * FROM WritesArticles NATURAL JOIN Articles WHERE staff_ID = ?;";
                         findArticleByAuthorQuery = connection.prepareStatement(query);
 
+                        query = "SELECT * FROM Staff NATURAL JOIN Payments WHERE staff_ID = ?;";
+                        showPaymentsForStaff = connection.prepareStatement(query);
+
                 } catch (SQLException e) {
                         e.printStackTrace();
                 }
         }
+
         public static void deletePayment(int staff_ID, String salary_date) {
                 try {
                         connection.setAutoCommit(false);
@@ -1098,10 +1103,9 @@ public class WolfPubDB {
                                 insertPaymentQuery.setInt(1, staff_ID);
                                 insertPaymentQuery.setString(2, salary_date);
                                 insertPaymentQuery.setDouble(3, payment_amount);
-                                if (collection_date.length() == 0)
-                                {
+                                if (collection_date.length() == 0) {
                                         insertPaymentQuery.setNull(4, Types.NULL);
-                                }else{
+                                } else {
                                         insertPaymentQuery.setString(4, collection_date);
                                 }
                                 insertPaymentQuery.executeUpdate();
@@ -1128,7 +1132,8 @@ public class WolfPubDB {
                         System.out.print("\n Enter payment amount \n");
                         Double payment_amount = scanner.nextDouble();
                         scanner.nextLine();
-                        System.out.print("\n Enter Date the salary was collected (press enter if unknown) (YYYY-MM-DD)\n");
+                        System.out.print(
+                                        "\n Enter Date the salary was collected (press enter if unknown) (YYYY-MM-DD)\n");
                         String collection_date = scanner.nextLine();
                         insertPayment_sql(staff_ID, salary_date, payment_amount, collection_date);
                 } catch (Throwable err) {
@@ -1143,7 +1148,7 @@ public class WolfPubDB {
                         try {
                                 updatePaymentCollectionDateQuery.setString(1, collection_date);
                                 updatePaymentCollectionDateQuery.setInt(2, staff_ID);
-                                updatePaymentCollectionDateQuery.setString(2, salary_date);
+                                updatePaymentCollectionDateQuery.setString(3, salary_date);
                                 updatePaymentCollectionDateQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
@@ -1190,7 +1195,6 @@ public class WolfPubDB {
                 // System.out.print("\033[H\033[2J");
                 // System.out.flush();
         }
-
 
         public static void displayAllAuthors() {
                 try {
@@ -1703,6 +1707,27 @@ public class WolfPubDB {
                 return null;
         }
 
+        public static void displayPaymentsForStaff() {
+                try {
+
+                        System.out.print("\n Enter the Staff ID for the payments to be displayed\n");
+                        int staff_ID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        showPaymentsForStaff.setInt(1, staff_ID);
+                        result = showPaymentsForStaff.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No payments exist for entered staff");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                return;
+        }
+
         public static void updateStaff_sql(int staff_ID, String name, String phone_number,
                         int age, String gender, String email, String Address) {
                 try {
@@ -1812,6 +1837,7 @@ public class WolfPubDB {
                         err.printStackTrace();
                 }
         }
+
         public static void displayPublicationsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -2026,8 +2052,6 @@ public class WolfPubDB {
                 }
         }
 
-
-
         public static void displayReportsMenu() {
                 while (true) {
                         clearConsoleScreen();
@@ -2084,9 +2108,10 @@ public class WolfPubDB {
                         System.out.println("---------------Staff Payment---------------");
                         System.out.println("20. Enter payment for Staff");
                         System.out.println("21. Update Date of collection of payment for Staff");
+                        System.out.println("22. Show payments for Staff ID");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("22. Go back to previous Menu");
-                        System.out.println("23. Exit");
+                        System.out.println("23. Go back to previous Menu");
+                        System.out.println("24. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2155,8 +2180,11 @@ public class WolfPubDB {
                                         updateCollectionDateOfPayment();
                                         break;
                                 case "22":
-                                        return;
+                                        displayPaymentsForStaff();
+                                        break;
                                 case "23":
+                                        return;
+                                case "24":
                                         System.exit(0);
                                         break;
                                 default:
