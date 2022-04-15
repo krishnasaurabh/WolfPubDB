@@ -261,6 +261,7 @@ public class WolfPubDB {
                         query = "Select * From `Articles` WHERE `publication_ID`= ?;";
                         displayArticlesQuery = connection.prepareStatement(query);
 
+                        // Queries for Distributor operations
                         query = "INSERT INTO Distributors(`account_number`, `phone`, `city`, `street_address`, `type`, `name`, `balance`, `contact_person`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertDistributorQuery = connection.prepareStatement(query);
                         query = "UPDATE `Distributors`" + " SET `account_number` = ? WHERE account_number= ?;";
@@ -298,6 +299,7 @@ public class WolfPubDB {
                         query = "SELECT balance FROM `Distributors` WHERE account_number=?;";
                         generateBillDisplay = connection.prepareStatement(query);
 
+                        // Queries for Order operations
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
                         query = "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
@@ -315,6 +317,7 @@ public class WolfPubDB {
                         query = "SELECT order_number FROM Orders";
                         getOrderID = connection.prepareStatement(query);
 
+                        // Queries for Payment operations
                         query = "INSERT INTO `Payments` (`staff_ID`, `salary_date`, `payment_amount`, `collection_date`) VALUES (?, ?, ?, ?);";
                         insertPaymentQuery = connection.prepareStatement(query);
                         query = "UPDATE `Payments`"
@@ -450,6 +453,7 @@ public class WolfPubDB {
                                         "  GROUP BY S.role , E.type;  ";
                         totalStaffPaymentsPerPeriodPerWorkTypeReportQuery = connection.prepareStatement(query);
 
+                        // Display Queries
                         query = "SELECT * FROM Publications;";
                         showPublications = connection.prepareStatement(query);
 
@@ -519,6 +523,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Assign values to prepared statements of Delete Payment query.
         public static void deletePayment(int staff_ID, String salary_date) {
                 try {
                         connection.setAutoCommit(false);
@@ -541,6 +546,7 @@ public class WolfPubDB {
 
         }
 
+        // Assign values to prepared statements of Delete Distributor query.
         public static void deleteDistributor(int account_number) {
                 try {
                         connection.setAutoCommit(false);
@@ -863,10 +869,11 @@ public class WolfPubDB {
 
                                         case "3":
                                                 System.out.println("Enter the new publication date");
-                                                value = scanner.next();
+                                                value = scanner.nextLine();
                                                 updateBookPublicationDateQuery.setString(1, value);
                                                 System.out.println("Enter publication ID of the book");
                                                 pid = scanner.nextInt();
+                                                scanner.nextLine();
                                                 updateBookPublicationDateQuery.setInt(2, pid);
                                                 updateBookPublicationDateQuery.executeUpdate();
                                                 break;
@@ -2814,18 +2821,10 @@ public class WolfPubDB {
         }
 
         public static void placeOrderInputs() {
-                int oid = 0;
-                try {
-                        result = getOrderID.executeQuery();
-                        result.beforeFirst();
-                        while (result.next()) {
-                                oid = result.getInt("order_number");
-                        }
-                } catch (Exception e) {
-                        System.out.println("exception");
-                }
 
-                System.out.println(oid);
+                System.out.println("Enter Order ID:");
+                int oid = scanner.nextInt();
+                scanner.nextLine();
                 System.out.println("Enter publication ID for the order");
                 int pid = scanner.nextInt();
                 System.out.println("Enter distributor account number");
@@ -2840,7 +2839,7 @@ public class WolfPubDB {
                 double total_cost = scanner.nextDouble();
                 System.out.println("Enter shipping cost");
                 double shipping_cost = scanner.nextDouble();
-                placeOrder(oid + 1, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost,
+                placeOrder(oid, pid, account_number, order_date, order_delivery_date, number_of_copies, total_cost,
                                 shipping_cost);
 
         }
