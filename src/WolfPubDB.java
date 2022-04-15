@@ -282,8 +282,6 @@ public class WolfPubDB {
                         query = "select * from `Articles` where publication_ID=?;";
                         showArticlesPeriodicalQuery = connection.prepareStatement(query);
 
-
-
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
                         query = "UPDATE `Orders`" + " SET `order_date` = ? WHERE order_number= ?;";
@@ -500,7 +498,8 @@ public class WolfPubDB {
                         showPaymentsForStaff = connection.prepareStatement(query);
 
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Error Executing Query");
                 }
         }
 
@@ -514,12 +513,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -533,12 +534,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -601,12 +604,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -622,13 +626,15 @@ public class WolfPubDB {
                                 insertPublicationQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
+                                System.out.println(e.getMessage());
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -672,12 +678,12 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -731,12 +737,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -749,13 +756,14 @@ public class WolfPubDB {
                                 deleteBookQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
+                                System.out.println(e.getMessage());
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -775,12 +783,12 @@ public class WolfPubDB {
                         try {
                                 switch (option) {
                                         case "1":
-                                                System.out.println("Enter new book edition");
-                                                value = scanner.next();
-                                                updateBookEditionQuery.setString(1, value);
                                                 System.out.println("Enter publication ID of the book");
                                                 pid = scanner.nextInt();
                                                 updateBookEditionQuery.setInt(2, pid);
+                                                System.out.println("Enter new book edition");
+                                                value = scanner.next();
+                                                updateBookEditionQuery.setString(1, value);
                                                 updateBookEditionQuery.executeUpdate();
                                                 break;
 
@@ -839,7 +847,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Give Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -863,13 +872,14 @@ public class WolfPubDB {
 
                                 // then insert into periodical
                                 insertPeriodicalQuery.setInt(1, publicationID);
-                                insertPeriodicalQuery.setString(2,issueDate);
+                                insertPeriodicalQuery.setString(2, issueDate);
                                 insertPeriodicalQuery.setString(3, periodicity);
                                 insertPeriodicalQuery.executeUpdate();
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -905,7 +915,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -924,12 +935,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -950,12 +962,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -970,12 +983,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -991,12 +1005,13 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1029,7 +1044,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1050,7 +1066,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1070,7 +1087,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1167,7 +1185,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1186,7 +1205,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1220,7 +1240,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1268,7 +1289,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1287,12 +1309,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1313,12 +1337,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1354,12 +1380,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1389,7 +1417,8 @@ public class WolfPubDB {
                                 Runtime.getRuntime().exec("clear");
                         }
                 } catch (final Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                         // Handle any exceptions.
                 }
                 // System.out.print("Everything on the console will cleared");
@@ -1408,7 +1437,8 @@ public class WolfPubDB {
                         display_table(result);
                         System.out.println();
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1423,7 +1453,8 @@ public class WolfPubDB {
                         display_table(result);
                         System.out.println();
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1438,7 +1469,8 @@ public class WolfPubDB {
                         display_table(result);
                         System.out.println();
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1463,12 +1495,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1494,12 +1528,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1543,12 +1579,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1564,12 +1602,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1644,12 +1684,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1665,12 +1707,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1718,12 +1762,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -1739,12 +1785,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -1796,7 +1844,8 @@ public class WolfPubDB {
                         result.first();
                         return result;
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
                 return null;
         }
@@ -1812,7 +1861,8 @@ public class WolfPubDB {
                         result.first();
                         return result;
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
                 return null;
         }
@@ -1861,7 +1911,8 @@ public class WolfPubDB {
                         result.beforeFirst();
                         display_table(result);
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
                 return null;
         }
@@ -1924,7 +1975,8 @@ public class WolfPubDB {
                         result.beforeFirst();
                         display_table(result);
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
                 return;
         }
@@ -1946,7 +1998,8 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
@@ -1978,7 +2031,7 @@ public class WolfPubDB {
                         String publicationDate = scanner.nextLine();
                         insertBook(publicationID, title, topic, type, price, isbn, edition, publicationDate);
                 } catch (Exception e) {
-                        System.out.println("Failure");
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -2155,8 +2208,8 @@ public class WolfPubDB {
 
                         insertChapter(publicationID, title, text);
 
-                } catch (Throwable err) {
-                        err.printStackTrace();
+                } catch (Exception e) {
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -2371,12 +2424,14 @@ public class WolfPubDB {
                                         connection.commit();
                                 } catch (SQLException e) {
                                         connection.rollback();
-                                        e.printStackTrace();
+                                        System.out.println(e.getMessage());
+                                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                                 } finally {
                                         connection.setAutoCommit(true);
                                 }
                         } catch (SQLException e) {
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         }
                 } catch (Exception e) {
                         System.out.println("Failure. Unable to delete staff");
@@ -2417,6 +2472,7 @@ public class WolfPubDB {
                                         getNewBookInputs();
                                         break;
                                 case "2":
+                                        displayAllBooks();
                                         updateBookMenu();
                                         break;
                                 case "3":
@@ -2455,7 +2511,6 @@ public class WolfPubDB {
                                         break;
                                 case "14":
                                         getPeriodicalIDforArticles();
-                                        findBooks();
                                 case "15":
                                         return;
                                 case "16":
@@ -2594,12 +2649,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -2673,12 +2730,14 @@ public class WolfPubDB {
 
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
@@ -2799,7 +2858,8 @@ public class WolfPubDB {
                                 System.out.println();
                         }
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                         System.out.println("Failure");
                 }
         }
@@ -2863,7 +2923,8 @@ public class WolfPubDB {
                                 System.out.println("No Reports Exist");
                         }
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                         System.out.println("Failure");
                 }
         }
@@ -3050,8 +3111,8 @@ public class WolfPubDB {
                 }
         }
 
-        public static void showOrdersDistributor(){
-                int account_number; 
+        public static void showOrdersDistributor() {
+                int account_number;
                 System.out.println("Enter the account number");
                 account_number = scanner.nextInt();
                 try {
@@ -3070,8 +3131,8 @@ public class WolfPubDB {
 
         }
 
-        public static void showDistributorBalance(){
-                int account_number; 
+        public static void showDistributorBalance() {
+                int account_number;
                 System.out.println("Enter the account number");
                 account_number = scanner.nextInt();
                 try {
@@ -3089,8 +3150,8 @@ public class WolfPubDB {
                 }
         }
 
-        public static void showDistributorPayments(){
-                int account_number; 
+        public static void showDistributorPayments() {
+                int account_number;
                 System.out.println("Enter the account number");
                 account_number = scanner.nextInt();
                 try {
@@ -3108,8 +3169,8 @@ public class WolfPubDB {
                 }
         }
 
-        public static void showArticlesPeriodical(){
-                int pid; 
+        public static void showArticlesPeriodical() {
+                int pid;
                 System.out.println("Enter the publication number of the periodical");
                 pid = scanner.nextInt();
                 try {
@@ -3124,10 +3185,9 @@ public class WolfPubDB {
                         System.out.println();
                 } catch (Exception e) {
                         System.out.println("Failure");
-                } 
+                }
 
         }
-
 
         public static void displayDistributorsMenu() {
                 while (true) {
@@ -3343,7 +3403,8 @@ public class WolfPubDB {
                                 publicationID = result.getInt("publication_ID");
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
                 return publicationID + 1;
@@ -3472,12 +3533,14 @@ public class WolfPubDB {
                                 connection.commit();
                         } catch (SQLException e) {
                                 connection.rollback();
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         } finally {
                                 connection.setAutoCommit(true);
                         }
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -3557,7 +3620,8 @@ public class WolfPubDB {
 
                 } catch (SQLException e) {
                         connection.rollback();
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } finally {
                         connection.setAutoCommit(true);
                 }
@@ -3602,7 +3666,8 @@ public class WolfPubDB {
 
                 } catch (SQLException e) {
                         connection.rollback();
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } finally {
                         connection.setAutoCommit(true);
                 }
@@ -3805,7 +3870,8 @@ public class WolfPubDB {
 
                 } catch (SQLException e) {
                         connection.rollback();
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } finally {
                         connection.setAutoCommit(true);
                 }
@@ -4017,7 +4083,8 @@ public class WolfPubDB {
 
                 } catch (SQLException e) {
                         connection.rollback();
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } finally {
                         connection.setAutoCommit(true);
                 }
@@ -4133,7 +4200,8 @@ public class WolfPubDB {
 
                 } catch (SQLException e) {
                         connection.rollback();
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } finally {
                         connection.setAutoCommit(true);
                 }
@@ -4151,7 +4219,8 @@ public class WolfPubDB {
                                                 close();
                                         } catch (InterruptedException e) {
                                                 Thread.currentThread().interrupt();
-                                                e.printStackTrace();
+                                                System.out.println(e.getMessage());
+                                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                                         }
                                 }
                         });
@@ -4160,9 +4229,11 @@ public class WolfPubDB {
                         System.out.println("Connection to WolfPubDB is successfull.");
                         scanner = new Scanner(System.in);
                 } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
         }
 
@@ -4185,21 +4256,24 @@ public class WolfPubDB {
                         try {
                                 connection.close();
                         } catch (SQLException e) {
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         }
                 }
                 if (statement != null) {
                         try {
                                 statement.close();
                         } catch (SQLException e) {
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         }
                 }
                 if (result != null) {
                         try {
                                 result.close();
                         } catch (SQLException e) {
-                                e.printStackTrace();
+                                System.out.println(e.getMessage());
+                                System.out.println("Operation Failed. Try Again with Valid Inputs");
                         }
                 }
         }
@@ -4213,7 +4287,8 @@ public class WolfPubDB {
                 try {
                         displayMenu();
                 } catch (SQLException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
                 close();
         }
@@ -4244,7 +4319,8 @@ public class WolfPubDB {
                         print();
                         resetRows();
                 } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
 
         }
