@@ -165,10 +165,11 @@ public class WolfPubDB {
         private static PreparedStatement findArticleByAuthorQuery;
         private static PreparedStatement showPaymentsForStaff;
 
-        // Met
+        // generates Prepared Statements for all queries to perform operations.
         public static void generateDDLAndDMLStatements() {
                 String query;
                 try {
+                        // Queries for Publication operations
                         query = "INSERT INTO `Publications` (`publication_ID`, `title`, `topic`, `type`, `price`) VALUES (?, ?, ?, ?, ?);";
                         insertPublicationQuery = connection.prepareStatement(query);
                         query = "UPDATE `Publications`" + " SET `price` = ? WHERE `publication_ID`= ?;";
@@ -184,11 +185,13 @@ public class WolfPubDB {
                         query = "SELECT publication_ID from `Publications`;";
                         getLastPublicationID = connection.prepareStatement(query);
 
+                        // Edits Queries
                         query = "INSERT INTO `Edits` (`staff_ID`, `publication_ID`) VALUES (?, ?);";
                         editorAssignmentQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Edits`" + " WHERE `staff_ID` = ? AND `publication_ID`=?;";
                         editorUnAssignmentQuery = connection.prepareStatement(query);
 
+                        // Queries for Book operations
                         query = "INSERT INTO `Books` (`publication_ID`, `ISBN`,`Edition`,`publication_date`) VALUES (?,?,?,?);";
                         insertBookQuery = connection.prepareStatement(query);
                         query = "UPDATE `Books`" + " SET `ISBN` = ? WHERE `publication_ID`= ?;";
@@ -206,6 +209,7 @@ public class WolfPubDB {
                         query = "SELECT * FROM `Books` WHERE `ISBN` = ?;";
                         findBookByISBNdQuery = connection.prepareStatement(query);
 
+                        // Queries for Chapters operations
                         query = "INSERT INTO `Chapters` (`publication_ID`, `title`, `text`) VALUES (?, ?, ?);";
                         insertChapterQuery = connection.prepareStatement(query);
                         query = "UPDATE `Chapters` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
@@ -217,6 +221,7 @@ public class WolfPubDB {
                         query = "Select * From `Chapters` WHERE `publication_ID`= ?;";
                         displayChaptersQuery = connection.prepareStatement(query);
 
+                        // Queries for Periodicals operations
                         query = "INSERT INTO `Periodicals` (`publication_ID`, `issue_date`,`periodicity`) VALUES (?,?,?);";
                         insertPeriodicalQuery = connection.prepareStatement(query);
                         query = "UPDATE `Periodicals`" + " SET `issue_date` = ? WHERE `publication_ID`= ?;";
@@ -230,6 +235,7 @@ public class WolfPubDB {
                         query = "SELECT * FROM Periodicals WHERE publication_ID=?;";
                         findPeriodicalByPIDQuery = connection.prepareStatement(query);
 
+                        // Queries for Distributor Payments
                         query = "INSERT INTO `DistributorPayments` (`account_number`, `payment_date`, `amount_paid`) VALUES (?, ?, ?);";
                         insertDistributorPaymentQuery = connection.prepareStatement(query);
                         query = "UPDATE `DistributorPayments`"
@@ -241,6 +247,7 @@ public class WolfPubDB {
                         query = "select * from `Distributors`;";
                         showAllDistributorsQuery = connection.prepareStatement(query);
 
+                        // Queries for Article operations
                         query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`) VALUES (?, ?, ?, ?);";
                         insertArticleQuery = connection.prepareStatement(query);
                         query = "UPDATE `Articles` SET `title` = ? WHERE `publication_ID`= ? AND `title`=?;";
@@ -654,6 +661,13 @@ public class WolfPubDB {
                         try {
                                 insertPublicationQuery.setInt(1, publicationID);
                                 insertPublicationQuery.setString(2, title);
+                                if (topic.length() == 0) {
+                                        insertPublicationQuery.setNull(3, Types.NULL);
+                                } else {
+                                        insertPublicationQuery.setString(3, topic);
+
+                                }
+
                                 insertPublicationQuery.setString(3, topic);
                                 insertPublicationQuery.setString(4, type);
                                 insertPublicationQuery.setDouble(5, price);
@@ -828,6 +842,7 @@ public class WolfPubDB {
                                         case "1":
                                                 System.out.println("Enter publication ID of the book");
                                                 pid = scanner.nextInt();
+                                                scanner.nextLine();
                                                 updateBookEditionQuery.setInt(2, pid);
                                                 System.out.println("Enter new book edition");
                                                 value = scanner.next();
@@ -841,6 +856,7 @@ public class WolfPubDB {
                                                 updateBookISBNQuery.setInt(1, Integer.parseInt(value));
                                                 System.out.println("Enter publication ID of the book");
                                                 pid = scanner.nextInt();
+                                                scanner.nextLine();
                                                 updateBookISBNQuery.setInt(2, pid);
                                                 updateBookISBNQuery.executeUpdate();
                                                 break;
@@ -3304,6 +3320,7 @@ public class WolfPubDB {
                 int pid;
                 System.out.println("Enter the publication number of the periodical");
                 pid = scanner.nextInt();
+                scanner.nextLine();
                 try {
                         showArticlesPeriodicalQuery.setInt(1, pid);
                         result = showArticlesPeriodicalQuery.executeQuery();
@@ -3373,9 +3390,9 @@ public class WolfPubDB {
                                 case "10":
                                         showArticlesPeriodical();
                                         break;
-                                case "23":
+                                case "11":
                                         return;
-                                case "24":
+                                case "12":
                                         System.exit(0);
                                         break;
                                 default:
