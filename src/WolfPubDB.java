@@ -3296,22 +3296,6 @@ public class WolfPubDB {
 
         }
 
-        public static void displayAllDistributors() {
-                try {
-                        result = showAllDistributorsQuery.executeQuery();
-                        if (!result.next()) {
-                                System.out.println("No Distributors exist");
-                                return;
-                        }
-                        result.beforeFirst();
-                        display_table(result);
-                        System.out.println();
-                } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        System.out.println("Operation Failed. Try Again with Valid Inputs");
-                }
-        }
-
         public static void displayDistributorsMenu() {
                 while (true) {
                         clearConsoleScreen();
