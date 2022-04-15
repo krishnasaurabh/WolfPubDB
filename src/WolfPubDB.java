@@ -493,7 +493,7 @@ public class WolfPubDB {
                         query = "SELECT * FROM Edits NATURAL JOIN Publications WHERE staff_ID = ?;";
                         findPublicationByEditorQuery = connection.prepareStatement(query);
 
-                        query = "SELECT * FROM WritesBook NATURAL JOIN Book WHERE staff_ID = ?;";
+                        query = "SELECT * FROM WritesBook NATURAL JOIN Books WHERE staff_ID = ?;";
                         findBookByAuthorQuery = connection.prepareStatement(query);
 
                         query = "SELECT * FROM WritesArticles NATURAL JOIN Articles WHERE staff_ID = ?;";
