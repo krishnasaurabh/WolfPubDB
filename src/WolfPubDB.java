@@ -3275,22 +3275,13 @@ public class WolfPubDB {
                         String response = scanner.nextLine();
                         switch (response) {
                                 case "1":
-                                        insertBookMenu();
+                                        getNewBookInputs();
                                         break;
                                 case "2":
-                                        System.out.println("Enter publication ID");
-                                        publicationID = scanner.nextInt();
-                                        scanner.nextLine();
-                                        System.out.println("Enter the title of the article");
-                                        title = scanner.nextLine();
-                                        System.out.println("Enter the text of the article");
-                                        text = scanner.nextLine();
-                                        System.out.println("Enter the creation date of the article");
-                                        creationDate = scanner.nextLine();
-                                        insertArticle(publicationID, title, text, creationDate);
+                                        getNewArticleInputs();
                                         break;
                                 case "3":
-                                        insertBookMenu();
+                                        getNewChapterInputs();
                                         break;
                                 case "4":
                                         findBookByAuthor();
