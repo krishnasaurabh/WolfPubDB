@@ -1703,7 +1703,7 @@ public class WolfPubDB {
                         System.out.print("\n Staff ID of the Editor\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
-                        System.out.print("\n Enter the Publication ID: \n");
+                        System.out.print("\n Publication ID of the Editor\n");
                         int publication_ID = scanner.nextInt();
                         scanner.nextLine();
                         addEdits_sql(staff_ID, publication_ID);
@@ -2124,6 +2124,19 @@ public class WolfPubDB {
 
                         deleteBook(publicationID);
                         System.out.println("The Book is deleted successfully!");
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
+        public static void getDeletePublicationInputs() {
+                try {
+                        System.out.println("\n Enter the Publication ID of the publication to be deleted:\n");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        deleteBook(publicationID);
+                        System.out.println("The Publication is deleted successfully!");
                 } catch (Exception e) {
                         System.out.println("Failure");
                 }
@@ -2559,8 +2572,9 @@ public class WolfPubDB {
                         System.out.println("15. Show all periodicals");
                         System.out.println("16. Show all articles for a periodical");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("17. Go back to previous Menu");
-                        System.out.println("18. Exit");
+                        System.out.println("17. Delete a Publication");
+                        System.out.println("18. Go back to previous Menu");
+                        System.out.println("19. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2616,8 +2630,10 @@ public class WolfPubDB {
                                         getPeriodicalIDforArticles();
                                         break;
                                 case "17":
-                                        return;
+                                        getDeletePublicationInputs();
                                 case "18":
+                                        return;
+                                case "19":
                                         System.exit(0);
                                 default:
                                         System.out.println("Please enter correct choice from above.");
