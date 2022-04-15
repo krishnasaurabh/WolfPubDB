@@ -282,7 +282,7 @@ public class WolfPubDB {
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
                         deleteDistributorQuery = connection.prepareStatement(query);
-                        query = "UPDATE `Distributors` d join `Orders` o SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
+                        query = "UPDATE `Distributors` d join `Orders` o SET d.balance = d.balance + o.total_cost + o.shipping_cost  WHERE o.order_number = ?;";
                         generateBillQuery = connection.prepareStatement(query);
                         query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
                         deduceBalanceQuery = connection.prepareStatement(query);
@@ -4380,6 +4380,7 @@ public class WolfPubDB {
                 }
         }
 
+        // initialization steps to setup the database and connections
         private static void initialize() {
                 try {
                         connectToDatabase();
@@ -4410,6 +4411,7 @@ public class WolfPubDB {
                 }
         }
 
+        // connects to database
         private static void connectToDatabase() throws ClassNotFoundException, SQLException {
                 Class.forName("org.mariadb.jdbc.Driver");
                 // String user = "kvankad";
@@ -4423,6 +4425,7 @@ public class WolfPubDB {
 
         }
 
+        // close connection from database
         private static void close() {
                 System.out.println("Closing all connections....");
                 if (connection != null) {
@@ -4466,6 +4469,7 @@ public class WolfPubDB {
                 close();
         }
 
+        // display table helper
         public static void display_table(ResultSet resultSet) {
                 try {
                         ResultSetMetaData rsmd = resultSet.getMetaData();
