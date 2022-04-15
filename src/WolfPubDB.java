@@ -1703,7 +1703,7 @@ public class WolfPubDB {
                         System.out.print("\n Staff ID of the Editor\n");
                         int staff_ID = scanner.nextInt();
                         scanner.nextLine();
-                        System.out.print("\n Publication ID of the Editor\n");
+                        System.out.print("\n Enter the Publication ID: \n");
                         int publication_ID = scanner.nextInt();
                         scanner.nextLine();
                         addEdits_sql(staff_ID, publication_ID);
