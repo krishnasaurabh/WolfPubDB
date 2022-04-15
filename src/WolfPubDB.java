@@ -93,6 +93,7 @@ public class WolfPubDB {
         private static PreparedStatement showDistributorPaymentsQuery;
         private static PreparedStatement showArticlesPeriodicalQuery;
         private static PreparedStatement showAllDistributorsQuery;
+        private static PreparedStatement generateBillDisplay;
 
         private static PreparedStatement insertOrderQuery;
         private static PreparedStatement updateOrderDateQuery;
@@ -272,7 +273,7 @@ public class WolfPubDB {
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
                         deleteDistributorQuery = connection.prepareStatement(query);
-                        query = "UPDATE `Distributors` d JOIN `Orders` o ON o.distributor_account_no = d.account_number SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
+                        query = "SELECT `Distributors` d.account_number SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
                         generateBillQuery = connection.prepareStatement(query);
                         query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
                         deduceBalanceQuery = connection.prepareStatement(query);
@@ -286,6 +287,8 @@ public class WolfPubDB {
                         showArticlesPeriodicalQuery = connection.prepareStatement(query);
                         query = "select * from `Distributors`;";
                         showAllDistributorsQuery = connection.prepareStatement(query);
+                        query = "SELECT balance FROM `Distributors` WHERE account_number=?;";
+                        generateBillDisplay = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
@@ -2826,11 +2829,11 @@ public class WolfPubDB {
         }
 
         public static void generateBill() {
-                System.out.println("Enter order number");
-                int order_number = scanner.nextInt();
+                System.out.println("Enter account number");
+                int account_number = scanner.nextInt();
                 try {
-                        generateBillQuery.setInt(1, order_number);
-                        generateBillQuery.executeUpdate();
+                        generateBillDisplay.setInt(1, account_number);
+                        generateBillDisplay.executeUpdate();
                 } catch (SQLException e) {
                         System.out.println("update failed");
                 }
