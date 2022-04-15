@@ -165,6 +165,7 @@ public class WolfPubDB {
         private static PreparedStatement findArticleByAuthorQuery;
         private static PreparedStatement showPaymentsForStaff;
 
+        // Met
         public static void generateDDLAndDMLStatements() {
                 String query;
                 try {
@@ -2829,15 +2830,19 @@ public class WolfPubDB {
         }
 
         public static void generateBill() {
-                System.out.println("Enter account number");
-                int account_number = scanner.nextInt();
                 try {
-                        generateBillDisplay.setInt(1, account_number);
-                        generateBillDisplay.executeUpdate();
-                } catch (SQLException e) {
-                        System.out.println("update failed");
+                        result = generateBillDisplay.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Bills exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
                 }
-
         }
 
         public static void deduceBalance(int account_number, String payment_date) {
