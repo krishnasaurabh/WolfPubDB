@@ -282,7 +282,7 @@ public class WolfPubDB {
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
                         deleteDistributorQuery = connection.prepareStatement(query);
-                        query = "UPDATE `Distributors` d join `Orders` o SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
+                        query = "UPDATE `Distributors` d join `Orders` o SET d.balance = d.balance + o.total_cost WHERE o.order_number = ?;";
                         generateBillQuery = connection.prepareStatement(query);
                         query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
                         deduceBalanceQuery = connection.prepareStatement(query);
@@ -1487,6 +1487,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Input to update collections of date of payment
         public static void updateCollectionDateOfPayment() {
                 try {
                         System.out.print("\n Enter the details of the Payment to staff to be updated\n");
@@ -1522,6 +1523,7 @@ public class WolfPubDB {
                 // System.out.flush();
         }
 
+        // Displays Author's Table
         public static void displayAllAuthors() {
                 try {
                         result = showAuthors.executeQuery();
@@ -1538,6 +1540,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Displays Distributors Table
         public static void displayAllDistributors() {
                 try {
                         result = showAllDistributorsQuery.executeQuery();
@@ -1554,6 +1557,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Displays Editor's Table
         public static void displayAllEditors() {
                 try {
                         result = showEditors.executeQuery();
@@ -1570,6 +1574,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Display Staff Table
         public static void displayAllStaff() {
                 try {
                         result = showStaff.executeQuery();
