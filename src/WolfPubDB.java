@@ -282,7 +282,7 @@ public class WolfPubDB {
                         updateDistributorContactPersonQuery = connection.prepareStatement(query);
                         query = "DELETE FROM `Distributors`" + " WHERE `account_number` = ?;";
                         deleteDistributorQuery = connection.prepareStatement(query);
-                        query = "SELECT `Distributors` d d.account_number SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
+                        query = "UPDATE `Distributors` d join `Orders` o SET d.balance = d.balance + o.total_cost +o.shipping_cost WHERE o.order_number = ?;";
                         generateBillQuery = connection.prepareStatement(query);
                         query = "UPDATE Distributors d join DistributorPayments dp ON dp.account_number = d.account_number  SET d.balance = d.balance - dp.amount_paid WHERE dp.account_number = ? AND dp.payment_date = ?;";
                         deduceBalanceQuery = connection.prepareStatement(query);
@@ -567,7 +567,8 @@ public class WolfPubDB {
                 }
         }
 
-        // Assign values to prepared statements of update queries of Distributors.
+        // Assign values to prepared statements of update queries of Distributors
+        // details.
         public static void updateDistributor(int account_number, String newValue, String option) {
                 try {
 
@@ -662,6 +663,8 @@ public class WolfPubDB {
                 }
         }
 
+        // Assign values to prepared statements of update queries of Distributors
+        // details.
         public static void insertPublication(int publicationID, String title, String topic, String type, Double price) {
                 try {
                         connection.setAutoCommit(false);
@@ -2937,7 +2940,7 @@ public class WolfPubDB {
                                         break;
                                 case "7":
                                         displayAllDistributors();
-                                        return;
+                                        break;
                                 case "8":
                                         return;
                                 case "9":
