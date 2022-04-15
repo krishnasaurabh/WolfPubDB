@@ -92,6 +92,7 @@ public class WolfPubDB {
         private static PreparedStatement showDistributorBalanceQuery;
         private static PreparedStatement showDistributorPaymentsQuery;
         private static PreparedStatement showArticlesPeriodicalQuery;
+        private static PreparedStatement showAllDistributorsQuery;
 
         private static PreparedStatement insertOrderQuery;
         private static PreparedStatement updateOrderDateQuery;
@@ -235,6 +236,8 @@ public class WolfPubDB {
                         query = "DELETE FROM `DistributorPayments`"
                                         + " WHERE `account_number`= ? AND `payment_date`=?;";
                         deleteDistributorPaymentQuery = connection.prepareStatement(query);
+                        query = "select * from `Distributors`;";
+                        showAllDistributorsQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Articles` (`publication_id`, `title`, `text`, `creation_date`) VALUES (?, ?, ?, ?);";
                         insertArticleQuery = connection.prepareStatement(query);
@@ -2766,9 +2769,10 @@ public class WolfPubDB {
                         System.out.println("4.  Place an order for a distributor");
                         System.out.println("5.  Generate Bill for distributor");
                         System.out.println("6.  Receive Payment of distributor");
+                        System.out.println("7.  Show All Distributors");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("7. Go back to previous Menu");
-                        System.out.println("8. Exit");
+                        System.out.println("8. Go back to previous Menu");
+                        System.out.println("9. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2792,8 +2796,11 @@ public class WolfPubDB {
                                         receivePayment();
                                         break;
                                 case "7":
+                                        displayAllDistributors();
                                         return;
                                 case "8":
+                                        return;
+                                case "9":
                                         System.exit(0);
                                         break;
                                 default:
@@ -3187,6 +3194,22 @@ public class WolfPubDB {
                         System.out.println("Failure");
                 }
 
+        }
+
+        public static void displayAllDistributors() {
+                try {
+                        result = showAllDistributorsQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Distributors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
+                }
         }
 
         public static void displayDistributorsMenu() {
