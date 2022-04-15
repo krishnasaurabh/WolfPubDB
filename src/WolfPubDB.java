@@ -2456,6 +2456,10 @@ public class WolfPubDB {
                                 case "14":
                                         getPeriodicalIDforArticles();
                                         findBooks();
+                                case "15":
+                                        return;
+                                case "16":
+                                        System.exit(0);
                                 default:
                                         System.out.println("Please enter correct choice from above.");
                                         break;
