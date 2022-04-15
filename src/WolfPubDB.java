@@ -697,6 +697,8 @@ public class WolfPubDB {
 
         }
 
+        // Assign values to prepared statements of update queries of Publication
+        // details.
         public static void updatePublication(int publicationID, String option, String newValue) {
                 try {
                         connection.setAutoCommit(false);
@@ -746,6 +748,7 @@ public class WolfPubDB {
 
         }
 
+        // Take inputs for Addition of new book
         public static void insertBookMenu() {
                 System.out.println("Enter publicationID");
                 int pid = scanner.nextInt();
@@ -771,6 +774,7 @@ public class WolfPubDB {
                 insertBook(pid, title, topic, type, price, isbn, edition, publication_date);
         }
 
+        // Transaction to insert book into database
         public static void insertBook(int publicationID, String title, String topic, String type, Double price,
                         int isbn, int edition, String publicationDate) {
                 try {
@@ -815,6 +819,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to delete book into database
         public static void deleteBook(int publicationID) {
                 try {
                         connection.setAutoCommit(false);
@@ -835,6 +840,7 @@ public class WolfPubDB {
 
         }
 
+        // Menu to display update operations for a book
         public static void updateBookMenu() {
                 System.out.println("1.  Update book edition");
                 System.out.println("2.  Update book ISBN");
@@ -927,6 +933,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to insert into periodical into database
         public static void insertPeriodical(int publicationID, String issueDate, String topic, String periodicity,
                         String title, String type, Double price) {
                 try {
@@ -959,6 +966,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to update periodical details
         public static void updatePeriodical(int publicationID, String option, String newValue) {
                 try {
                         connection.setAutoCommit(false);
@@ -996,6 +1004,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to delete a periodical from database
         public static void deletePeriodical(int publicationID) {
                 try {
                         connection.setAutoCommit(false);
@@ -1015,6 +1024,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to insert new distributor into database
         public static void insertDistributor(int accountNumber, String phone, String city, String streetAddress,
                         String type, String name, Double balance, String contactPerson) {
                 try {
@@ -1043,6 +1053,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to delete a chapter from database
         public static void deleteChapter(int publicationID, String title) {
                 try {
                         connection.setAutoCommit(false);
@@ -1064,6 +1075,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to insert a chapter into database
         public static void insertChapter(int publicationID, String title, String text) {
                 try {
                         connection.setAutoCommit(false);
@@ -1086,6 +1098,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to update a chapter into database
         public static void updateChapter(int publicationID, String title, String option, String newValue) {
                 try {
                         connection.setAutoCommit(false);
@@ -1124,6 +1137,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to insert an Article into database
         public static void insertArticle(int publicationID, String title, String text, String creationDate) {
                 try {
                         connection.setAutoCommit(false);
@@ -1147,6 +1161,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to delete an Article into database
         public static void deleteArticle(int publicationID, String title) {
                 try {
                         connection.setAutoCommit(false);
@@ -1166,6 +1181,8 @@ public class WolfPubDB {
                         System.out.println("Failure");
                 }
         }
+
+        // Menu to display operations on Article Update
 
         public static void updateArticleMenu() {
                 String title, text, creation_date, val;
@@ -1219,6 +1236,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to update details of an Article into database
         public static void updateArticle(int publicationID, String title, String option, String newValue) {
                 try {
                         connection.setAutoCommit(false);
@@ -1265,6 +1283,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to Assign an Editor to a publication
         public static void editorAssignment(int staffID, int publicationID) {
                 try {
                         connection.setAutoCommit(false);
@@ -1286,6 +1305,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to add an order
         public static void insertOrder(int order_number, int publication_ID, int distributor_account_no,
                         String order_date, String order_delivery_date, int number_of_copies, double total_cost,
                         double shipping_cost) {
@@ -1321,6 +1341,7 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to update order details
         public void updateOrder(String newValue, String option, int order_number) {
                 try {
                         connection.setAutoCommit(false);
@@ -1370,6 +1391,8 @@ public class WolfPubDB {
 
         }
 
+        // Transaction to delete an order.
+
         public static void deleteOrder(int order_number) {
                 try {
                         connection.setAutoCommit(false);
@@ -1390,6 +1413,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to insert payments
         public static void insertPayment_sql(int staff_ID, String salary_date, double payment_amount,
                         String collection_date) {
                 try {
@@ -1418,6 +1442,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Input Payment details to add a payment to a staff
         public static void insertPayment() {
                 try {
                         System.out.print("\n Enter the details of the Payment to staff\n");
@@ -1438,6 +1463,7 @@ public class WolfPubDB {
                 }
         }
 
+        // Transaction to update collections of date of payment
         public static void updateCollectionDateOfPayment_sql(String collection_date, int staff_ID,
                         String salary_date) {
                 try {
