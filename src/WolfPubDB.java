@@ -284,6 +284,8 @@ public class WolfPubDB {
                         showDistributorPaymentsQuery = connection.prepareStatement(query);
                         query = "select * from `Articles` where publication_ID=?;";
                         showArticlesPeriodicalQuery = connection.prepareStatement(query);
+                        query = "select * from `Distributors`;";
+                        showAllDistributorsQuery = connection.prepareStatement(query);
 
                         query = "INSERT INTO `Orders` (`order_number`, `publication_ID`, `distributor_account_no`, `order_date`, `order_delivery_date`, `number_of_copies`, `total_cost`, `shipping_cost`) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
                         insertOrderQuery = connection.prepareStatement(query);
@@ -550,6 +552,7 @@ public class WolfPubDB {
 
         public static void updateDistributor(int account_number, String newValue, String option) {
                 try {
+
                         connection.setAutoCommit(false);
                         try {
                                 switch (option) {
@@ -561,29 +564,49 @@ public class WolfPubDB {
                                                 break;
 
                                         case "2":
-                                                updateDistributorPhoneQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorPhoneQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorPhoneQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorPhoneQuery.setInt(2, account_number);
                                                 updateDistributorPhoneQuery.executeUpdate();
                                                 break;
 
                                         case "3":
-                                                updateDistributorCityQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorCityQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorCityQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorCityQuery.setInt(2, account_number);
                                                 updateDistributorCityQuery.executeUpdate();
                                                 break;
 
                                         case "4":
-                                                updateDistributorStreetAddressQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorStreetAddressQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorStreetAddressQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorStreetAddressQuery.setInt(2, account_number);
                                                 updateDistributorStreetAddressQuery.executeUpdate();
                                                 break;
                                         case "5":
-                                                updateDistributorTypeQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorTypeQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorTypeQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorTypeQuery.setInt(2, account_number);
                                                 updateDistributorTypeQuery.executeUpdate();
                                                 break;
                                         case "6":
-                                                updateDistributorNameQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorNameQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorNameQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorNameQuery.setInt(2, account_number);
                                                 updateDistributorNameQuery.executeUpdate();
                                                 break;
@@ -593,7 +616,11 @@ public class WolfPubDB {
                                                 updateDistributorBalanceQuery.executeUpdate();
                                                 break;
                                         case "8":
-                                                updateDistributorContactPersonQuery.setString(1, newValue);
+                                                if (newValue.length() == 0) {
+                                                        updateDistributorContactPersonQuery.setNull(1, Types.NULL);
+                                                } else {
+                                                        updateDistributorContactPersonQuery.setString(1, newValue);
+                                                }
                                                 updateDistributorContactPersonQuery.setInt(2, account_number);
                                                 updateDistributorContactPersonQuery.executeUpdate();
                                                 break;
@@ -723,8 +750,17 @@ public class WolfPubDB {
                         try {
                                 // first we insert a publication table
                                 insertPublicationQuery.setInt(1, publicationID);
-                                insertPublicationQuery.setString(2, title);
-                                insertPublicationQuery.setString(3, topic);
+
+                                if (title.length() == 0) {
+                                        insertPublicationQuery.setNull(2, Types.NULL);
+                                } else {
+                                        insertPublicationQuery.setString(2, title);
+                                }
+                                if (topic.length() == 0) {
+                                        insertPublicationQuery.setNull(3, Types.NULL);
+                                } else {
+                                        insertPublicationQuery.setString(3, topic);
+                                }
                                 insertPublicationQuery.setString(4, type);
                                 insertPublicationQuery.setDouble(5, price);
                                 insertPublicationQuery.executeUpdate();
@@ -1445,6 +1481,22 @@ public class WolfPubDB {
                 }
         }
 
+        public static void displayAllDistributors() {
+                try {
+                        result = showAllDistributorsQuery.executeQuery();
+                        if (!result.next()) {
+                                System.out.println("No Distributors exist");
+                                return;
+                        }
+                        result.beforeFirst();
+                        display_table(result);
+                        System.out.println();
+                } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        System.out.println("Operation Failed. Try Again with Valid Inputs");
+                }
+        }
+
         public static void displayAllEditors() {
                 try {
                         result = showEditors.executeQuery();
@@ -2014,7 +2066,9 @@ public class WolfPubDB {
 
         public static void getNewBookInputs() {
                 try {
-                        int publicationID = generatePublicationID();
+                        System.out.println("\n Enter PublicationID : ");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
                         System.out.println("\n Enter the details of the Book");
                         System.out.println("\n Book Title:");
                         String title = scanner.nextLine();
@@ -2070,6 +2124,40 @@ public class WolfPubDB {
 
                         deleteBook(publicationID);
                         System.out.println("The Book is deleted successfully!");
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
+        public static void getDeleteChapterInputs() {
+                try {
+                        System.out.println("\n Enter the Publication ID of the Chapter to be deleted:\n");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        System.out.println("\n Enter the title of the chapter:\n");
+                        String title = scanner.nextLine();
+                        scanner.nextLine();
+
+                        deleteChapter(publicationID, title);
+                        System.out.println("The Chapter is deleted successfully!");
+                } catch (Exception e) {
+                        System.out.println("Failure");
+                }
+        }
+
+        public static void getDeleteArticleInputs() {
+                try {
+                        System.out.println("\n Enter the Publication ID of the Article to be deleted:\n");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+
+                        System.out.println("\n Enter the title of the Article:\n");
+                        String title = scanner.nextLine();
+                        scanner.nextLine();
+
+                        deleteArticle(publicationID, title);
+                        System.out.println("The Chapter is deleted successfully!");
                 } catch (Exception e) {
                         System.out.println("Failure");
                 }
@@ -2337,23 +2425,27 @@ public class WolfPubDB {
         }
 
         public static void insertPeriodicalMenu() {
-                System.out.println("Enter publication ID");
-                int publicationID = scanner.nextInt();
-                scanner.nextLine();
-                System.out.println("Enter issue date");
-                String issue_date = scanner.nextLine();
-                System.out.println("Enter the title");
-                String title = scanner.nextLine();
-                System.out.println("Enter the type");
-                String type = scanner.nextLine();
-                System.out.println("Enter periodicity (weekly, monthly etc)");
-                String periodicity = scanner.nextLine();
-                System.out.println("Enter the price of the periodical");
-                Double price = scanner.nextDouble();
-                scanner.nextLine();
-                System.out.println("Enter the topic");
-                String topic = scanner.nextLine();
-                insertPeriodical(publicationID, issue_date, topic, periodicity, title, type, price);
+                try {
+                        System.out.println("Enter publication ID");
+                        int publicationID = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.println("Enter issue date");
+                        String issue_date = scanner.nextLine();
+                        System.out.println("Enter the title");
+                        String title = scanner.nextLine();
+                        System.out.println("Enter the type");
+                        String type = scanner.nextLine();
+                        System.out.println("Enter periodicity (weekly, monthly etc)");
+                        String periodicity = scanner.nextLine();
+                        System.out.println("Enter the price of the periodical");
+                        Double price = scanner.nextDouble();
+                        scanner.nextLine();
+                        System.out.println("Enter the topic");
+                        String topic = scanner.nextLine();
+                        insertPeriodical(publicationID, issue_date, topic, periodicity, title, type, price);
+                } catch (Exception e) {
+                        System.out.println("Error in input values");
+                }
 
         }
 
@@ -2454,19 +2546,21 @@ public class WolfPubDB {
                         System.out.println("3.  Find books");
                         System.out.println("4.  Delete a book");
                         System.out.println("5.  Add a chapter to a Book");
-                        System.out.println("6.  Show all Books");
-                        System.out.println("7.  Show all chapters for a Book");
+                        System.out.println("6.  Delete a chapter from a Book");
+                        System.out.println("7.  Show all Books");
+                        System.out.println("8.  Show all chapters for a Book");
                         System.out.println("---------------PERIODICALS---------------");
-                        System.out.println("8.  Add new Periodical");
-                        System.out.println("9.  Find a periodical");
-                        System.out.println("10. Add an article to a Periodical");
-                        System.out.println("11. Delete a periodical");
-                        System.out.println("12. Update Periodical/article");
-                        System.out.println("13. Show all periodicals");
-                        System.out.println("14. Show all articles for a periodical");
+                        System.out.println("9.  Add new Periodical");
+                        System.out.println("10.  Find a periodical");
+                        System.out.println("11. Add an article to a Periodical");
+                        System.out.println("12. Delete an article from a Periodical");
+                        System.out.println("13. Delete a periodical");
+                        System.out.println("14. Update Periodical/article");
+                        System.out.println("15. Show all periodicals");
+                        System.out.println("16. Show all articles for a periodical");
                         System.out.println("---------------MENU ACTIONS---------------");
-                        System.out.println("15. Go back to previous Menu");
-                        System.out.println("16. Exit");
+                        System.out.println("17. Go back to previous Menu");
+                        System.out.println("18. Exit");
 
                         System.out.print("\nEnter Choice: ");
                         String response = scanner.nextLine();
@@ -2489,34 +2583,41 @@ public class WolfPubDB {
                                         getNewChapterInputs();
                                         break;
                                 case "6":
-                                        displayAllBooks();
+                                        getDeleteChapterInputs();
                                         break;
                                 case "7":
-                                        getBookIDforChapters();
+                                        displayAllBooks();
                                         break;
                                 case "8":
-                                        insertPeriodicalMenu();
+                                        getBookIDforChapters();
                                         break;
                                 case "9":
-                                        findPeriodicals();
+                                        insertPeriodicalMenu();
                                         break;
                                 case "10":
-                                        getNewArticleInputs();
+                                        findPeriodicals();
                                         break;
                                 case "11":
-                                        getDeletePeriodicalInputs();
+                                        getNewArticleInputs();
                                         break;
                                 case "12":
-                                        updatePeriodicalMenu();
+                                        getDeleteArticleInputs();
                                         break;
                                 case "13":
-                                        displayAllPeriodicals();
+                                        getDeletePeriodicalInputs();
                                         break;
                                 case "14":
-                                        getPeriodicalIDforArticles();
+                                        updatePeriodicalMenu();
+                                        break;
                                 case "15":
-                                        return;
+                                        displayAllPeriodicals();
+                                        break;
                                 case "16":
+                                        getPeriodicalIDforArticles();
+                                        break;
+                                case "17":
+                                        return;
+                                case "18":
                                         System.exit(0);
                                 default:
                                         System.out.println("Please enter correct choice from above.");
@@ -2681,7 +2782,6 @@ public class WolfPubDB {
                 try {
                         result = getOrderID.executeQuery();
                         result.beforeFirst();
-                        System.out.println(result);
                         while (result.next()) {
                                 oid = result.getInt("order_number");
                         }
